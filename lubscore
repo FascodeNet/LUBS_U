@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+
+set -e -u
+
+export LANG=C
+
+arch=$(uname -m)
+quiet=false
+work_dir="work"
+
+
+# Show an INFO message
+# _msg_info <message>
+function _msg_info () {
+    local _msg="${@}"
+    echo "[LUBS Core] INFO: ${_msg}"
+}
+
+# Show an ERROR message then exit with status
+# _msg_error <message> <exit code>
+function _msg_error() {
+    local _msg="${1}"
+    local _error=${2}
+    echo
+    echo "[LUBS Core] ERROR: ${_msg}" >&2
+    echo
+    if [[ ! ${_error} = 0 ]]; then
+        exit ${_error}
+    fi
+}
+
+function _apt () {
+    _msg_info "Installing packages to '${work_dir}/airootfs/'..."
+
+    if [[ "${quiet}" = "y" ]]; then
+        debootstrap --arch=
+    else
+        
+    fi
+
+    _msg_info "Packages installed successfully!"
+}
