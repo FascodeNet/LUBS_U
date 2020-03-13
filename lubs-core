@@ -33,24 +33,16 @@ function _msg_error() {
     fi
 }
 
-# Install desired packages to airootfs
-function _apt_get () {
-    _msg_info "Installing packages to '${work_dir}/airootfs/'..."
-
+function install_ubuntu() {
+    _msg_info "Installing Ubuntu to '${work_dir}/airootfs/'..."
     if ${quiet}; then
         # true
-        debootstrap --arch=${arch} --merged-usr --include=${@} ${codename} ${work_dir}/airootfs http://ubuntutym.u-toyama.ac.jp/ubuntu
+        debootstrap --arch=${arch} --merged-usr ${codename} ${work_dir}/airootfs http://ubuntutym.u-toyama.ac.jp/ubuntu  &> /dev/null
     else
         # false
-        debootstrap --arch=${arch} --merged-usr --include=${@} ${codename} ${work_dir}/airootfs http://ubuntutym.u-toyama.ac.jp/ubuntu &> /dev/null
+        debootstrap --arch=${arch} --verbose --merged-usr ${codename} ${work_dir}/airootfs http://ubuntutym.u-toyama.ac.jp/ubuntu
     fi
-
-    _msg_info "Packages installed successfully!"
+    _msg_info "Ubuntu installed successfully!"
 }
 
-function _chroot_init() {
-    mkdir -p ${work_dir}/airootfs
-    _apt_get 'linux-image-generic,grub'
-}
-
-_chroot_init
+install_ubuntu
