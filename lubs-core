@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 set -e -u
-
+set -x
 export LANG=C
 
 
@@ -35,6 +35,7 @@ function _msg_error() {
 
 function install_ubuntu() {
     _msg_info "Installing Ubuntu to '${work_dir}/airootfs/'..."
+    mkdir -p ${work_dir}/airootfs
     if ${quiet}; then
         # true
         debootstrap --arch=${arch} --merged-usr ${codename} ${work_dir}/airootfs http://ubuntutym.u-toyama.ac.jp/ubuntu  &> /dev/null
