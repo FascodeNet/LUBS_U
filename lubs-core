@@ -39,10 +39,10 @@ function _apt_get () {
 
     if ${quiet}; then
         # true
-        debootstrap --arch=${arch} --include=${@} --merged-usr ${work_dir}/airootfs/ ${codename} http://ubuntutym.u-toyama.ac.jp/ubuntu/
+        debootstrap --arch=${arch} --merged-usr --include=${@} ${codename} ${work_dir}/airootfs http://ubuntutym.u-toyama.ac.jp/ubuntu
     else
         # false
-        debootstrap --arch=${arch} --include=${@} --merged-usr ${work_dir}/airootfs/ ${codename} http://ubuntutym.u-toyama.ac.jp/ubuntu/&> /dev/null
+        debootstrap --arch=${arch} --merged-usr --include=${@} ${codename} ${work_dir}/airootfs http://ubuntutym.u-toyama.ac.jp/ubuntu &> /dev/null
     fi
 
     _msg_info "Packages installed successfully!"
@@ -52,3 +52,5 @@ function _chroot_init() {
     mkdir -p ${work_dir}/airootfs
     _apt_get 'linux-image-generic,grub'
 }
+
+_chroot_init
