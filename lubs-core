@@ -11,6 +11,7 @@ work_dir="work"
 script_path=$(readlink -f ${0%/*})
 script_dir=$(dirname ${script_path})
 codename="bionic"
+mirror="http://archive.ubuntu.com/ubuntu/"
 
 
 # Show an INFO message
@@ -38,10 +39,10 @@ function install_ubuntu() {
     mkdir -p ${work_dir}/airootfs
     if ${quiet}; then
         # true
-        debootstrap --arch=${arch} --merged-usr ${codename} ${work_dir}/airootfs http://ubuntutym.u-toyama.ac.jp/ubuntu  &> /dev/null
+        debootstrap --arch=${arch} --merged-usr ${codename} ${work_dir}/airootfs ${mirror}  &> /dev/null
     else
         # false
-        debootstrap --arch=${arch} --verbose --merged-usr ${codename} ${work_dir}/airootfs http://ubuntutym.u-toyama.ac.jp/ubuntu
+        debootstrap --arch=${arch} --verbose --merged-usr ${codename} ${work_dir}/airootfs ${mirror}
     fi
     _msg_info "Ubuntu installed successfully!"
 }
