@@ -10,6 +10,7 @@ quiet=false
 work_dir="work"
 script_path=$(readlink -f ${0%/*})
 script_dir=$(dirname ${script_path})
+codename="bionic"
 
 
 # Show an INFO message
@@ -33,16 +34,21 @@ function _msg_error() {
 }
 
 # Install desired packages to airootfs
-function _apt () {
+function _apt_get () {
     _msg_info "Installing packages to '${work_dir}/airootfs/'..."
 
     if ${quiet}; then
         # true
-        debootstrap --arch=${arch} --include=${@} --merged-usr
+        debootstrap --arch=${arch} --include=${@} --merged-usr ${work_dir}/airootfs/ ${codename} http://ubuntutym.u-toyama.ac.jp/ubuntu/
     else
         # false
-        debootstrap --arch=${arch} --include=${@} --merged-usr &> /dev/null
+        debootstrap --arch=${arch} --include=${@} --merged-usr ${work_dir}/airootfs/ ${codename} http://ubuntutym.u-toyama.ac.jp/ubuntu/&> /dev/null
     fi
 
     _msg_info "Packages installed successfully!"
+}
+
+function _chroot_init() {
+    mkdir -p ${work_dir}/airootfs
+    _apt_get 'linux-image-generic,grub'
 }
