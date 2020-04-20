@@ -5,12 +5,12 @@ set -e -u
 export LANG=C
 
 
-arch=$(uname -m)
+arch=amd64
 work_dir="work"
 script_path=$(readlink -f ${0%/*})
 script_dir=$(dirname ${script_path})
 codename="bionic"
-mirror="http://archive.ubuntu.com/ubuntu/dists/${codename}"
+mirror="http://ftp.jaist.ac.jp/pub/Linux/ubuntu/"
 
 
 # Show an INFO message
