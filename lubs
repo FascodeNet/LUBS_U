@@ -1,12 +1,11 @@
 #!/usr/bin/env bash
 
 set -e -u
-set -x
+
 export LANG=C
 
 
 arch=$(uname -m)
-quiet=false
 work_dir="work"
 script_path=$(readlink -f ${0%/*})
 script_dir=$(dirname ${script_path})
@@ -37,14 +36,8 @@ function _msg_error() {
 function install_ubuntu() {
     _msg_info "Installing Ubuntu to '${work_dir}/airootfs/'..."
     mkdir -p ${work_dir}/airootfs
-    if ${quiet}; then
-        # true
-        debootstrap --arch=${arch} --merged-usr ${codename} ${work_dir}/airootfs ${mirror}  &> /dev/null
-    else
-        # false
-        debootstrap --arch=${arch} --verbose --merged-usr ${codename} ${work_dir}/airootfs ${mirror}
-    fi
-    _msg_info "Ubuntu installed successfully!"
+    debootstrap --arch=${arch} --verbose --merged-usr ${codename} ${work_dir}/airootfs ${mirror}
+    _msg_info "${codename} installed successfully!"
 }
 
 install_ubuntu
