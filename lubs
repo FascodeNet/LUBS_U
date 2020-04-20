@@ -8,7 +8,6 @@ export LANG=C
 arch=amd64
 work_dir="work"
 script_path=$(readlink -f ${0%/*})
-script_dir=$(dirname ${script_path})
 codename="bionic"
 mirror="http://ftp.jaist.ac.jp/pub/Linux/ubuntu/"
 
@@ -33,12 +32,22 @@ function _msg_error() {
     fi
 }
 
+function run_cmd () {
+    "${script_path}/lubs-chroot" "${work_dir}/airootfs" ${@}
+}
+
 function prepare_build {
     if [[ ${EUID} -ne 0 ]]; then
         _msg_error "This script must be run as root." 1
     fi
     
     [[ ! -d "${work_dir}" ]] && mkdir -p "${work_dir}"
+
+    local mount
+    for mount in $(mount | awk '{print $3}' | grep $(realpath ${work_dir})); do
+        _msg_info "Unmounting ${mount}"
+        umount "${mount}"
+    done
 
 }
 
@@ -50,7 +59,7 @@ function make_basefs() {
 }
 
 function make_packages() {
-    :
+    run_cmd apt-get update
 }
 
 prepare_build
