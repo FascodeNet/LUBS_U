@@ -73,7 +73,7 @@ make_basefs () {
     debootstrap --arch=${arch} --include=linux-image-generic  --verbose --merged-usr "${codename}" "${work_dir}/airootfs" ${mirror}
     echo 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${PATH}' >> "${work_dir}/airootfs/etc/bash.bashrc"
     run_cmd apt-get update
-    run_cmd apt-get upgrade
+    # run_cmd apt-get upgrade
     _msg_info "${codename} installed successfully!"
 }
 
