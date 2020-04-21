@@ -66,8 +66,12 @@ prepare_build () {
 make_basefs () {
     _msg_info "Installing Ubuntu to '${work_dir}/airootfs/'..."
     mkdir -p ${work_dir}/airootfs
-    debootstrap --arch=${arch} --verbose --merged-usr ${codename} ${work_dir}/airootfs ${mirror}
+    debootstrap --arch=${arch} --verbose --merged-usr "${codename}" "${work_dir}/airootfs" ${mirror}
     _msg_info "${codename} installed successfully!"
+}
+
+make_sourcelist () {
+    cp ${script_path}/source.list.d/${codename}/* ${work_dir}/airootfs/etc/apt
 }
 
 make_packages () {
@@ -76,6 +80,7 @@ make_packages () {
     run_cmd apt-get --yes install ${installpkglist[@]}
 }
 
-run_once prepare_build
+prepare_build
 run_once make_basefs
+run_once make_sourcelist
 run_once make_packages
