@@ -1,0 +1,3 @@
+deb http://archive.ubuntu.com/ubuntu/ trusty main restricted
+deb http://security.ubuntu.com/ubuntu/ trusty-security main restricted
+deb http://archive.ubuntu.com/ubuntu/ trusty-updates main restricted
