@@ -83,4 +83,4 @@ make_packages () {
 prepare_build
 run_once make_basefs
 run_once make_sourcelist
-run_once make_packages
+# run_once make_packages
