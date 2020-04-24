@@ -84,10 +84,21 @@ make_sourcelist () {
 make_packages () {
     run_cmd apt-get update
     installpkglist=($(grep -h -v ^'#' ${script_path}/packages.x86_64))
-    run_cmd apt-get --yes install ${installpkglist[@]}
+    run_cmd sudo -i apt-get --yes install ${installpkglist[@]}
+}
+
+make_customize_airootfs() {
+    # Overwrite airootfs with customize_airootfs.
+    cp -af "${script_path}/channels/share/airootfs" "${work_dir}/x86_64"
+
+    if [[ -f ${work_dir}/airootfs/root/customize_airootfs.sh ]]; then
+    	chmod 755 "${work_dir}/airootfs/root/customize_airootfs.sh"
+        run_cmd bash "${work_dir}/airootfs/root/customize_airootfs.sh"
+    fi
 }
 
 prepare_build
 run_once make_basefs
 run_once make_sourcelist
-# run_once make_packages
+run_once make_packages
+run_once make_customize_airootfs
