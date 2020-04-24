@@ -91,9 +91,9 @@ make_customize_airootfs() {
     # Overwrite airootfs with customize_airootfs.
     cp -af "${script_path}/airootfs" "${work_dir}"
 
-    if [[ -f ${work_dir}/airootfs/root/customize_airootfs.sh ]]; then
+    if [[ -f "${work_dir}/airootfs/root/customize_airootfs.sh" ]]; then
     	chmod 755 "${work_dir}/airootfs/root/customize_airootfs.sh"
-        run_cmd bash "${work_dir}/airootfs/root/customize_airootfs.sh"
+        run_cmd "/root/customize_airootfs.sh"
     fi
 }
 
