@@ -1,5 +1,5 @@
 #!/bin/bash
-set -x
+
 shopt -s extglob
 
 # generated from util-linux source: libmount/src/utils.c
