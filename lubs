@@ -6,9 +6,11 @@ export LANG=C
 
 
 arch=amd64
+cache_dir="cache"
 work_dir="work"
 script_path=$(readlink -f ${0%/*})
-codename="bionic"
+codename="focal"
+#codename="bionic"
 mirror="http://ftp.jaist.ac.jp/pub/Linux/ubuntu/"
 
 
@@ -16,7 +18,7 @@ mirror="http://ftp.jaist.ac.jp/pub/Linux/ubuntu/"
 # _msg_info <message>
 _msg_info () {
     local _msg="${@}"
-    echo "[LUBS Core] INFO: ${_msg}"
+    echo -e "\033[0;36m[LUBS Core] \033[0;32mINFO:\033[0;39m ${_msg}"
 }
 
 # Show an ERROR message then exit with status
@@ -24,7 +26,7 @@ _msg_info () {
 _msg_error() {
     local _msg="${1}"
     local _error=${2}
-    echo "[LUBS Core] ERROR: ${_msg}" >&2
+    echo -e "\033[0;36m[LUBS Core] \033[0;31mERROR:\033[0;39m ${_msg}" >&2
     if [[ ! ${_error} = 0 ]]; then
         exit ${_error}
     fi
@@ -59,7 +61,7 @@ prepare_build () {
     [[ ! -d "${work_dir}" ]] && mkdir -p "${work_dir}"
 
     local mount
-    for mount in $(mount | awk '{print $3}' | grep $(realpath ${work_dir})); do
+    for mount in $(mount | awk '{print $3}' | grep $(realpath ${work_dir}) | sort -r); do
         _msg_info "Unmounting ${mount}"
         umount "${mount}"
     done
@@ -68,13 +70,21 @@ prepare_build () {
 
 
 make_basefs () {
-    _msg_info "Installing Ubuntu to '${work_dir}/airootfs/'..."
-    mkdir -p ${work_dir}/airootfs
-    debootstrap --arch=${arch} --include=linux-image-generic  --verbose --merged-usr "${codename}" "${work_dir}/airootfs" ${mirror}
+    if [[ ! -d "${cache_dir}/${codename}" ]]; then
+        _msg_info "Installing Ubuntu to '${cache_dir}/${codename}'..."
+        mkdir -p "${cache_dir}/${codename}"
+        debootstrap --arch=${arch} --include=linux-image-generic  --verbose --merged-usr "${codename}" "${cache_dir}/${codename}" ${mirror}
+        rm "${cache_dir}/${codename}/var/cache/apt/archives/*.deb"
+        _msg_info "${codename} installed successfully!"
+    fi
+    
+    rm -rf "${work_dir}/airootfs" && mkdir -p "${work_dir}/airootfs"
+    _msg_info "copy base files from '${cache_dir}/${codename}' to '${work_dir}/airootfs'..."
+    rsync  -au "${cache_dir}/${codename}/" "${work_dir}/airootfs"
     echo 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${PATH}' >> "${work_dir}/airootfs/etc/bash.bashrc"
     run_cmd apt-get update
     # run_cmd apt-get upgrade
-    _msg_info "${codename} installed successfully!"
+    _msg_info "make basefs done!"
 }
 
 make_sourcelist () {
