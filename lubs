@@ -6,8 +6,8 @@ export LANG=C
 
 
 arch=amd64
-cache_dir="cache"
 work_dir="work"
+cache_dir="${work_dir}/cache"
 script_path=$(readlink -f ${0%/*})
 codename="focal"
 mirror="http://ftp.jaist.ac.jp/pub/Linux/ubuntu/"
