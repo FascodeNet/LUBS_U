@@ -90,7 +90,7 @@ make_sourcelist () {
     cp ${script_path}/source.list.d/${codename}/* ${work_dir}/airootfs/etc/apt
 }
 
-install_systemd() {
+make_systemd() {
     run_cmd apt-get install --yes systemd-sysv
     run_cmd dbus-uuidgen > /etc/machine-id
     run_cmd ln -fs /etc/machine-id /var/lib/dbus/machine-id
@@ -268,7 +268,7 @@ make_iso() {
 prepare_build
 run_once make_basefs
 run_once make_sourcelist
-run_once install_systemd
+run_once make_systemd
 run_once make_packages
 run_once make_config
 run_once make_customize_airootfs
