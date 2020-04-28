@@ -122,6 +122,7 @@ make_customize_airootfs() {
 
 make_clean() {
     run_cmd apt-get clean
+    run_cmd apt-get --yes autoremove
     run_cmd rm -rf "/tmp/* ~/.bash_history"
 }
 
