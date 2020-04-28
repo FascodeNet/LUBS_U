@@ -14,7 +14,7 @@ mirror="http://ftp.jaist.ac.jp/pub/Linux/ubuntu/"
 
 os_name="Ubuntu"
 iso_name="ubuntu"
-iso_label="_$(date +%Y%m)"
+iso_label="${os_name}_${codename}_${arch}"
 iso_publisher='Fascode Network <https://fascode.net>'
 iso_application="${os_name} Live/Rescue CD"
 iso_version="${codename}-$(date +%Y.%m.%d)"
