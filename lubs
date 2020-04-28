@@ -74,7 +74,6 @@ make_basefs () {
         _msg_info "Installing Ubuntu to '${cache_dir}/${codename}'..."
         mkdir -p "${cache_dir}/${codename}"
         debootstrap --arch=${arch} --include=linux-image-generic  --verbose --merged-usr "${codename}" "${cache_dir}/${codename}" ${mirror}
-        rm "${cache_dir}/${codename}/var/cache/apt/archives/*.deb"
         _msg_info "${codename} installed successfully!"
     fi
     
@@ -91,10 +90,24 @@ make_sourcelist () {
     cp ${script_path}/source.list.d/${codename}/* ${work_dir}/airootfs/etc/apt
 }
 
+install_systemd() {
+    run_cmd apt-get install --yes systemd-sysv
+    run_cmd dbus-uuidgen > /etc/machine-id
+    run_cmd ln -fs /etc/machine-id /var/lib/dbus/machine-id
+}
+
 make_packages () {
     run_cmd apt-get update
     installpkglist=($(grep -h -v ^'#' ${script_path}/packages.x86_64))
     run_cmd sudo -i apt-get --yes install ${installpkglist[@]}
+}
+
+make_config() {
+    run_cmd dpkg-reconfigure locales
+    run_cmd dpkg-reconfigure resolvconf
+    run_cmd echo -e "[main]\nrc-manager=resolvconf\nplugins=ifupdown,keyfile\n\ndns=dnsmasq\n[ifupdown]\nmanaged=false" > /etc/NetworkManager/NetworkManager.conf
+    run_cmd dpkg-reconfigure network-manager
+    run_cmd truncate -s 0 /etc/machine-id
 }
 
 make_customize_airootfs() {
@@ -107,8 +120,164 @@ make_customize_airootfs() {
     fi
 }
 
+make_clean() {
+    run_cmd apt-get clean
+    run_cmd rm -rf "/tmp/* ~/.bash_history"
+}
+
+make_bootfiles() {
+    run_cmd update-initramfs -c -k all
+    run_cmd apt-get install --yes memtest86+
+    mkdir -p out/{casper,isolinux,install}
+    cp ${work_dir}/airootfs/boot/vmlinuz-*-*-generic out/casper/vmlinuz
+    cp ${work_dir}/airootfs/boot/initrd.img-*-*-generic out/casper/initrd
+    cp ${work_dir}/airootfs/boot/memtest86+.bin out/install/memtest86+
+    wget -O out/install/memtest86-usb.zip https://www.memtest86.com/downloads/memtest86-usb.zip
+    zip -r out/install/memtest86-usb.zip memtest86-usb.img out/install/memtest86
+    rm -f out/install/memtest86-usb.zip
+}
+
+make_grubcfg() {
+touch "out/ubuntu"
+cat <<EOF > out/isolinux/grub.cfg
+
+search --set=root --file /ubuntu
+
+insmod all_video
+
+set default="0"
+set timeout=30
+
+menuentry "Try Ubuntu FS without installing" {
+   linux /casper/vmlinuz boot=casper quiet splash ---
+   initrd /casper/initrd
+}
+
+menuentry "Install Ubuntu FS" {
+   linux /casper/vmlinuz boot=casper only-ubiquity quiet splash ---
+   initrd /casper/initrd
+}
+
+menuentry "Check disc for defects" {
+   linux /casper/vmlinuz boot=casper integrity-check quiet splash ---
+   initrd /casper/initrd
+}
+
+menuentry "Test memory Memtest86+ (BIOS)" {
+   linux16 /install/memtest86+
+}
+
+menuentry "Test memory Memtest86 (UEFI, long load time)" {
+   insmod part_gpt
+   insmod search_fs_uuid
+   insmod chain
+   loopback loop /install/memtest86
+   chainloader (loop,gpt1)/efi/boot/BOOTX64.efi
+}
+EOF
+}
+
+make_manifest() {
+    run_cmd dpkg-query -W --showformat='${Package} ${Version}\n' | tee out/casper/filesystem.manifest
+    cp -v out/casper/filesystem.manifest "out/casper/filesystem.manifest-desktop"
+    sed -i '/ubiquity/d' "out/casper/filesystem.manifest-desktop"
+    sed -i '/casper/d' "out/casper/filesystem.manifest-desktop"
+    sed -i '/discover/d' "out/casper/filesystem.manifest-desktop"
+    sed -i '/laptop-detect/d' "out/casper/filesystem.manifest-desktop"
+    sed -i '/os-prober/d' "out/casper/filesystem.manifest-desktop"
+}
+
+make_squashfs() {
+    mksquashfs "${work_dir}/airootfs" "out/casper/filesystem.squashfs"
+    printf $(du -sx --block-size=1 "${work_dir}/airootfs" | cut -f1) > out/casper/filesystem.size
+}
+
+make_deifnes() {
+cat <<EOF > out/README.diskdefines
+#define DISKNAME  Ubuntu from scratch
+#define TYPE  binary
+#define TYPEbinary  1
+#define ARCH  amd64
+#define ARCHamd64  1
+#define DISKNUM  1
+#define DISKNUM1  1
+#define TOTALNUM  0
+#define TOTALNUM0  1
+EOF
+}
+
+make_isolinux() {
+    cd out
+    grub-mkstandalone \
+        --format=x86_64-efi \
+        --output=isolinux/bootx64.efi \
+        --locales="" \
+        --fonts="" \
+        "boot/grub/grub.cfg=isolinux/grub.cfg"
+    (
+        cd isolinux && \
+        dd if=/dev/zero of=efiboot.img bs=1M count=10 && \
+        sudo mkfs.vfat efiboot.img && \
+        LC_CTYPE=C mmd -i efiboot.img efi efi/boot && \
+        LC_CTYPE=C mcopy -i efiboot.img ./bootx64.efi ::efi/boot/
+    )
+    grub-mkstandalone \
+        --format=i386-pc \
+        --output=isolinux/core.img \
+        --install-modules="linux16 linux normal iso9660 biosdisk memdisk search tar ls" \
+        --modules="linux16 linux normal iso9660 biosdisk search" \
+        --locales="" \
+        --fonts="" \
+        "boot/grub/grub.cfg=isolinux/grub.cfg"
+    cat /usr/lib/grub/i386-pc/cdboot.img isolinux/core.img > isolinux/bios.img
+    cd ..
+}
+
+make_md5sum() {
+    cd out
+    /bin/bash -c "(find . -type f -print0 | xargs -0 md5sum | grep -v "\./md5sum.txt" > md5sum.txt)"
+    cd ..
+}
+
+make_iso() {
+    cd out
+    xorriso \
+        -as mkisofs \
+        -iso-level 3 \
+        -full-iso9660-filenames \
+        -volid "Ubuntu from scratch" \
+        -eltorito-boot boot/grub/bios.img \
+        -no-emul-boot \
+        -boot-load-size 4 \
+        -boot-info-table \
+        --eltorito-catalog boot/grub/boot.cat \
+        --grub2-boot-info \
+        --grub2-mbr /usr/lib/grub/i386-pc/boot_hybrid.img \
+        -eltorito-alt-boot \
+        -e EFI/efiboot.img \
+        -no-emul-boot \
+        -append_partition 2 0xef isolinux/efiboot.img \
+        -output "../ubuntu-from-scratch.iso" \
+        -graft-points \
+            "." \
+            /boot/grub/bios.img=isolinux/bios.img \
+            /EFI/efiboot.img=isolinux/efiboot.img
+    cd ..
+}
+
 prepare_build
 run_once make_basefs
 run_once make_sourcelist
+run_once install_systemd
 run_once make_packages
+run_once make_config
 run_once make_customize_airootfs
+run_once make_clean
+run_once make_bootfiles
+run_once make_grubcfg
+run_once make_manifest
+run_once make_squashfs
+run_once make_deifnes
+run_once make_isolinux
+run_once make_md5sum
+run_once make_iso
