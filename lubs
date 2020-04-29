@@ -110,10 +110,20 @@ make_packages () {
 }
 
 make_config() {
-    run_cmd dpkg-reconfigure locales
-    run_cmd dpkg-reconfigure resolvconf
+    # Locales
+    run_cmd dpkg-reconfigure -f noninteractive locales 'en_US.UTF-8 UTF-8'
+
+    # resolvconf
+    run_cmd dpkg-reconfigure dpkg-reconfigure localesresolvconf
+
+    # NetworkManager
     run_cmd echo -e "[main]\nrc-manager=resolvconf\nplugins=ifupdown,keyfile\n\ndns=dnsmasq\n[ifupdown]\nmanaged=false" > /etc/NetworkManager/NetworkManager.conf
-    run_cmd dpkg-reconfigure network-manager
+
+    # Timezone
+    #run_cmd echo -ne "UTC" > '/etc/timezone'
+    #run_cmd dpkg-reconfigure -f noninteractive tzdata
+
+    run_cmd dpkg-reconfigure -f noninteractive dpkg-reconfigure locales network-manager
     run_cmd truncate -s 0 /etc/machine-id
 }
 
