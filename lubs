@@ -111,7 +111,7 @@ make_packages () {
 
 make_config() {
     # Locales
-    run_cmd dpkg-reconfigure -f noninteractive locales 'en_US.UTF-8 UTF-8'
+    run_cmd LANG=en_US.UTF-8 LC_ALL=C LANGUAGE=en_US.UTF-8 dpkg-reconfigure -f noninteractive locales
 
     # resolvconf
     run_cmd dpkg-reconfigure dpkg-reconfigure localesresolvconf
