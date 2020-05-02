@@ -8,6 +8,7 @@ export LANG=C
 arch=amd64
 work_dir="work"
 cache_dir="${work_dir}/cache"
+out_dir="${work_dir}/out"
 script_path=$(readlink -f ${0%/*})
 codename="focal"
 mirror="http://ftp.jaist.ac.jp/pub/Linux/ubuntu/"
@@ -42,15 +43,27 @@ _msg_error() {
 
 # Helper function to run make_*() only one time.
 run_once() {
-    if [[ ! -e "${work_dir}/build.${1}" ]]; then
-        "$1"
-        touch "${work_dir}/build.${1}"
+    if [[ "run_out" == "${1}" ]]; then
+        cmd="${2}"
+    else
+        cmd="${1}"
+    fi
+    
+    if [[ ! -e "${work_dir}/build.${cmd}" ]]; then
+        "$cmd"
+        touch "${work_dir}/build.${cmd}"
     fi
 }
 
 
 run_cmd () {
     "${script_path}/lubs-chroot" "${work_dir}/airootfs" ${@}
+}
+
+run_out () {
+    cd "${out_dir}"
+    "$1"
+    cd ..
 }
 
 _apt_install () {
@@ -146,18 +159,18 @@ make_clean() {
 make_bootfiles() {
     run_cmd update-initramfs -c -k all
     run_cmd apt-get install --yes memtest86+
-    mkdir -p out/{casper,isolinux,install}
-    cp ${work_dir}/airootfs/boot/vmlinuz-*-*-generic out/casper/vmlinuz
-    cp ${work_dir}/airootfs/boot/initrd.img-*-*-generic out/casper/initrd
-    cp ${work_dir}/airootfs/boot/memtest86+.bin out/install/memtest86+
-    wget -O out/install/memtest86-usb.zip https://www.memtest86.com/downloads/memtest86-usb.zip
-    zip -r out/install/memtest86-usb.zip memtest86-usb.img out/install/memtest86
-    rm -f out/install/memtest86-usb.zip
+    mkdir -p ${out_dir}/{casper,isolinux,install}
+    cp ${work_dir}/airootfs/boot/vmlinuz-*-*-generic ${out_dir}/casper/vmlinuz
+    cp ${work_dir}/airootfs/boot/initrd.img-*-*-generic ${out_dir}/casper/initrd
+    cp ${work_dir}/airootfs/boot/memtest86+.bin ${out_dir}/install/memtest86+
+    wget -O ${out_dir}/install/memtest86-usb.zip https://www.memtest86.com/downloads/memtest86-usb.zip
+    zip -r ${out_dir}/install/memtest86-usb.zip memtest86-usb.img ${out_dir}/install/memtest86
+    rm -f ${out_dir}/install/memtest86-usb.zip
 }
 
 make_grubcfg() {
-touch "out/ubuntu"
-cat <<EOF > out/isolinux/grub.cfg
+touch "${out_dir}/ubuntu"
+cat <<EOF > ${out_dir}/isolinux/grub.cfg
 
 search --set=root --file /ubuntu
 
@@ -196,22 +209,22 @@ EOF
 }
 
 make_manifest() {
-    run_cmd dpkg-query -W --showformat='${Package} ${Version}\n' | tee out/casper/filesystem.manifest
-    cp -v out/casper/filesystem.manifest "out/casper/filesystem.manifest-desktop"
-    sed -i '/ubiquity/d' "out/casper/filesystem.manifest-desktop"
-    sed -i '/casper/d' "out/casper/filesystem.manifest-desktop"
-    sed -i '/discover/d' "out/casper/filesystem.manifest-desktop"
-    sed -i '/laptop-detect/d' "out/casper/filesystem.manifest-desktop"
-    sed -i '/os-prober/d' "out/casper/filesystem.manifest-desktop"
+    run_cmd dpkg-query -W --showformat='${Package} ${Version}\n' | tee ${out_dir}/casper/filesystem.manifest
+    cp -v ${out_dir}/casper/filesystem.manifest "${out_dir}/casper/filesystem.manifest-desktop"
+    sed -i '/ubiquity/d' "${out_dir}/casper/filesystem.manifest-desktop"
+    sed -i '/casper/d' "${out_dir}/casper/filesystem.manifest-desktop"
+    sed -i '/discover/d' "${out_dir}/casper/filesystem.manifest-desktop"
+    sed -i '/laptop-detect/d' "${out_dir}/casper/filesystem.manifest-desktop"
+    sed -i '/os-prober/d' "${out_dir}/casper/filesystem.manifest-desktop"
 }
 
 make_squashfs() {
-    mksquashfs "${work_dir}/airootfs" "out/casper/filesystem.squashfs"
-    printf $(du -sx --block-size=1 "${work_dir}/airootfs" | cut -f1) > out/casper/filesystem.size
+    mksquashfs "${work_dir}/airootfs" "${out_dir}/casper/filesystem.squashfs"
+    printf $(du -sx --block-size=1 "${work_dir}/airootfs" | cut -f1) > ${out_dir}/casper/filesystem.size
 }
 
 make_deifnes() {
-cat <<EOF > out/README.diskdefines
+cat <<EOF > ${out_dir}/README.diskdefines
 #define DISKNAME  Ubuntu from scratch
 #define TYPE  binary
 #define TYPEbinary  1
@@ -225,7 +238,6 @@ EOF
 }
 
 make_isolinux() {
-    cd out
     grub-mkstandalone \
         --format=x86_64-efi \
         --output=isolinux/bootx64.efi \
@@ -248,17 +260,13 @@ make_isolinux() {
         --fonts="" \
         "boot/grub/grub.cfg=isolinux/grub.cfg"
     cat /usr/lib/grub/i386-pc/cdboot.img isolinux/core.img > isolinux/bios.img
-    cd ..
 }
 
 make_md5sum() {
-    cd out
     /bin/bash -c "(find . -type f -print0 | xargs -0 md5sum | grep -v "\./md5sum.txt" > md5sum.txt)"
-    cd ..
 }
 
 make_iso() {
-    cd out
     xorriso \
         -as mkisofs \
         -iso-level 3 \
@@ -283,7 +291,6 @@ make_iso() {
             "." \
             /boot/grub/bios.img=isolinux/bios.img \
             /EFI/efiboot.img=isolinux/efiboot.img
-    cd ..
 }
 
 prepare_build
@@ -299,6 +306,6 @@ run_once make_grubcfg
 run_once make_manifest
 run_once make_squashfs
 run_once make_deifnes
-run_once make_isolinux
-run_once make_md5sum
-run_once make_iso
+run_once run_out make_isolinux
+run_once run_out make_md5sum
+run_once run_out make_iso
