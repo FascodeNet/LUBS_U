@@ -50,15 +50,21 @@ _msg_end () {
 
 # Helper function to run make_*() only one time.
 run_once() {
-    if [[ "run_out" == "${1}" ]]; then
-        cmd="${2}"
+    local name
+    if [[ "run_out" == "$1" ]]; then
+        name="$2"
     else
-        cmd="${1}"
+        name="$1"
     fi
-    
-    if [[ ! -e "${work_dir}/build.${cmd}" ]]; then
-        "$cmd"
-        touch "${work_dir}/build.${cmd}"
+
+    if [[ ! -e "${work_dir}/build.${name}" ]]; then
+        if [[ "run_out" == "$1" ]]; then
+            "$1" "$2"
+        else
+            "$1"
+        fi
+
+        touch "${work_dir}/build.${name}"
     fi
 }
 
@@ -69,7 +75,7 @@ run_cmd () {
 run_out () {
     cd "${out_dir}"
     "$1"
-    cd ..
+    cd - > /dev/null
 }
 
 _apt_install () {
@@ -134,7 +140,7 @@ make_systemd() {
     job_name="systemd"
     _msg_start "${job_name}"
 
-    run_cmd apt-get install --yes systemd-sysv
+    _apt_install systemd-sysv
     run_cmd dbus-uuidgen > /etc/machine-id
     run_cmd ln -fs /etc/machine-id /var/lib/dbus/machine-id
 
@@ -159,10 +165,10 @@ make_config() {
     _msg_start "${job_name}"
 
     # Locales
-    run_cmd LANG=en_US.UTF-8 LC_ALL=C LANGUAGE=en_US.UTF-8 dpkg-reconfigure -f noninteractive locales
+    run_cmd env -i bash -c 'DEBIAN_FRONTEND=noninteractive LANG=en_US.UTF-8 LC_ALL=C LANGUAGE=en_US.UTF-8 dpkg-reconfigure locales'
 
     # resolvconf
-    run_cmd dpkg-reconfigure dpkg-reconfigure localesresolvconf
+    run_cmd env -i bash -c 'DEBIAN_FRONTEND=noninteractive dpkg-reconfigure resolvconf'
 
     # NetworkManager
     run_cmd echo -e "[main]\nrc-manager=resolvconf\nplugins=ifupdown,keyfile\n\ndns=dnsmasq\n[ifupdown]\nmanaged=false" > /etc/NetworkManager/NetworkManager.conf
@@ -171,7 +177,7 @@ make_config() {
     #run_cmd echo -ne "UTC" > '/etc/timezone'
     #run_cmd dpkg-reconfigure -f noninteractive tzdata
 
-    run_cmd dpkg-reconfigure -f noninteractive dpkg-reconfigure locales network-manager
+    run_cmd env -i bash -c 'DEBIAN_FRONTEND=noninteractive dpkg-reconfigure network-manager'
     run_cmd truncate -s 0 /etc/machine-id
 
     _msg_end "${job_name}"
@@ -211,14 +217,17 @@ make_bootfiles() {
     _msg_start "${job_name}"
 
     run_cmd update-initramfs -c -k all
-    run_cmd apt-get install --yes memtest86+
+    _apt_install memtest86+
     mkdir -p ${out_dir}/{casper,isolinux,install}
     cp ${work_dir}/airootfs/boot/vmlinuz-*-*-generic ${out_dir}/casper/vmlinuz
     cp ${work_dir}/airootfs/boot/initrd.img-*-*-generic ${out_dir}/casper/initrd
     cp ${work_dir}/airootfs/boot/memtest86+.bin ${out_dir}/install/memtest86+
-    wget -O ${out_dir}/install/memtest86-usb.zip https://www.memtest86.com/downloads/memtest86-usb.zip
-    zip -r ${out_dir}/install/memtest86-usb.zip memtest86-usb.img ${out_dir}/install/memtest86
-    rm -f ${out_dir}/install/memtest86-usb.zip
+
+    if [[ ! -f "${cache_dir}/memtest86-usb.zip" ]]; then
+        wget -O ${cache_dir}/memtest86-usb.zip https://www.memtest86.com/downloads/memtest86-usb.zip
+    fi
+
+    (unzip -p ${cache_dir}/memtest86-usb.zip memtest86-usb.img > ${out_dir}/install/memtest86)
 
     _msg_end "${job_name}"
 }
