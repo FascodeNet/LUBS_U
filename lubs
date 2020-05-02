@@ -40,6 +40,13 @@ _msg_error() {
     fi
 }
 
+_msg_start () {
+    _msg_info "make ${1} is starting."
+}
+
+_msg_end () {
+    _msg_info "make ${1} was done!"
+}
 
 # Helper function to run make_*() only one time.
 run_once() {
@@ -54,7 +61,6 @@ run_once() {
         touch "${work_dir}/build.${cmd}"
     fi
 }
-
 
 run_cmd () {
     "${script_path}/lubs-chroot" "${work_dir}/airootfs" ${@}
@@ -90,11 +96,17 @@ prepare_build () {
 
 
 make_basefs () {
+    local job_name
+    job_name="basefs"
+    _msg_start "${job_name}"
+
     if [[ ! -d "${cache_dir}/${codename}" ]]; then
         _msg_info "Installing Ubuntu to '${cache_dir}/${codename}'..."
         mkdir -p "${cache_dir}/${codename}"
         debootstrap --arch=${arch} --include=linux-image-generic  --verbose --merged-usr "${codename}" "${cache_dir}/${codename}" ${mirror}
         _msg_info "${codename} installed successfully!"
+    else
+        _msg_info "${codename} cache is found."
     fi
     
     rm -rf "${work_dir}/airootfs" && mkdir -p "${work_dir}/airootfs"
@@ -103,26 +115,49 @@ make_basefs () {
     echo 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${PATH}' >> "${work_dir}/airootfs/etc/bash.bashrc"
     run_cmd apt-get update
     # run_cmd apt-get upgrade
-    _msg_info "make basefs done!"
+
+    _msg_end "${job_name}"
 }
 
 make_sourcelist () {
+    local job_name
+    job_name="sourcelist"
+    _msg_start "${job_name}"
+
     cp ${script_path}/source.list.d/${codename}/* ${work_dir}/airootfs/etc/apt
+
+    _msg_end "${job_name}"
 }
 
 make_systemd() {
+    local job_name
+    job_name="systemd"
+    _msg_start "${job_name}"
+
     run_cmd apt-get install --yes systemd-sysv
     run_cmd dbus-uuidgen > /etc/machine-id
     run_cmd ln -fs /etc/machine-id /var/lib/dbus/machine-id
+
+    _msg_end "${job_name}"
 }
 
 make_packages () {
+    local job_name
+    job_name="packages"
+    _msg_start "${job_name}"
+
     run_cmd apt-get update
     installpkglist=($(grep -h -v ^'#' ${script_path}/packages.x86_64))
     run_cmd sudo -i apt-get --yes install ${installpkglist[@]}
+
+    _msg_end "${job_name}"
 }
 
 make_config() {
+    local job_name
+    job_name="config"
+    _msg_start "${job_name}"
+
     # Locales
     run_cmd LANG=en_US.UTF-8 LC_ALL=C LANGUAGE=en_US.UTF-8 dpkg-reconfigure -f noninteractive locales
 
@@ -138,9 +173,15 @@ make_config() {
 
     run_cmd dpkg-reconfigure -f noninteractive dpkg-reconfigure locales network-manager
     run_cmd truncate -s 0 /etc/machine-id
+
+    _msg_end "${job_name}"
 }
 
 make_customize_airootfs() {
+    local job_name
+    job_name="customize airootfs"
+    _msg_start "${job_name}"
+
     # Overwrite airootfs with customize_airootfs.
     cp -af "${script_path}/airootfs" "${work_dir}"
 
@@ -148,15 +189,27 @@ make_customize_airootfs() {
     	chmod 755 "${work_dir}/airootfs/root/customize_airootfs.sh"
         run_cmd "/root/customize_airootfs.sh"
     fi
+
+    _msg_end "${job_name}"
 }
 
 make_clean() {
+    local job_name
+    job_name="clean"
+    _msg_start "${job_name}"
+
     run_cmd apt-get clean
     run_cmd apt-get --yes autoremove
     run_cmd rm -rf "/tmp/* ~/.bash_history"
+
+    _msg_end "${job_name}"
 }
 
 make_bootfiles() {
+    local job_name
+    job_name="boot files"
+    _msg_start "${job_name}"
+
     run_cmd update-initramfs -c -k all
     run_cmd apt-get install --yes memtest86+
     mkdir -p ${out_dir}/{casper,isolinux,install}
@@ -166,9 +219,15 @@ make_bootfiles() {
     wget -O ${out_dir}/install/memtest86-usb.zip https://www.memtest86.com/downloads/memtest86-usb.zip
     zip -r ${out_dir}/install/memtest86-usb.zip memtest86-usb.img ${out_dir}/install/memtest86
     rm -f ${out_dir}/install/memtest86-usb.zip
+
+    _msg_end "${job_name}"
 }
 
 make_grubcfg() {
+local job_name
+job_name="grubcfg"
+_msg_start "${job_name}"
+
 touch "${out_dir}/ubuntu"
 cat <<EOF > ${out_dir}/isolinux/grub.cfg
 
@@ -206,9 +265,15 @@ menuentry "Test memory Memtest86 (UEFI, long load time)" {
    chainloader (loop,gpt1)/efi/boot/BOOTX64.efi
 }
 EOF
+
+_msg_end "${job_name}"
 }
 
 make_manifest() {
+    local job_name
+    job_name="manifest"
+    _msg_start "${job_name}"
+
     run_cmd dpkg-query -W --showformat='${Package} ${Version}\n' | tee ${out_dir}/casper/filesystem.manifest
     cp -v ${out_dir}/casper/filesystem.manifest "${out_dir}/casper/filesystem.manifest-desktop"
     sed -i '/ubiquity/d' "${out_dir}/casper/filesystem.manifest-desktop"
@@ -216,14 +281,26 @@ make_manifest() {
     sed -i '/discover/d' "${out_dir}/casper/filesystem.manifest-desktop"
     sed -i '/laptop-detect/d' "${out_dir}/casper/filesystem.manifest-desktop"
     sed -i '/os-prober/d' "${out_dir}/casper/filesystem.manifest-desktop"
+
+    _msg_end "${job_name}"
 }
 
 make_squashfs() {
+    local job_name
+    job_name="squashfs"
+    _msg_start "${job_name}"
+
     mksquashfs "${work_dir}/airootfs" "${out_dir}/casper/filesystem.squashfs"
     printf $(du -sx --block-size=1 "${work_dir}/airootfs" | cut -f1) > ${out_dir}/casper/filesystem.size
+
+    _msg_end "${job_name}"
 }
 
 make_deifnes() {
+local job_name
+job_name="defines"
+_msg_start "${job_name}"
+
 cat <<EOF > ${out_dir}/README.diskdefines
 #define DISKNAME  Ubuntu from scratch
 #define TYPE  binary
@@ -235,9 +312,15 @@ cat <<EOF > ${out_dir}/README.diskdefines
 #define TOTALNUM  0
 #define TOTALNUM0  1
 EOF
+
+_msg_end "${job_name}"
 }
 
 make_isolinux() {
+    local job_name
+    job_name="isolinux"
+    _msg_start "${job_name}"
+
     grub-mkstandalone \
         --format=x86_64-efi \
         --output=isolinux/bootx64.efi \
@@ -260,13 +343,25 @@ make_isolinux() {
         --fonts="" \
         "boot/grub/grub.cfg=isolinux/grub.cfg"
     cat /usr/lib/grub/i386-pc/cdboot.img isolinux/core.img > isolinux/bios.img
+
+    _msg_end "${job_name}"
 }
 
 make_md5sum() {
+    local job_name
+    job_name="md5sum"
+    _msg_start "${job_name}"
+
     /bin/bash -c "(find . -type f -print0 | xargs -0 md5sum | grep -v "\./md5sum.txt" > md5sum.txt)"
+
+    _msg_end "${job_name}"
 }
 
 make_iso() {
+    local job_name
+    job_name="iso"
+    _msg_start "${job_name}"
+
     xorriso \
         -as mkisofs \
         -iso-level 3 \
@@ -291,6 +386,8 @@ make_iso() {
             "." \
             /boot/grub/bios.img=isolinux/bios.img \
             /EFI/efiboot.img=isolinux/efiboot.img
+    
+    _msg_end "${job_name}"
 }
 
 prepare_build
