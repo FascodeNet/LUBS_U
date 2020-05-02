@@ -1,0 +1,120 @@
+#!/usr/bin/env python3
+#== Import ==#
+import sys
+
+#== Function ==#
+def usage():
+    print(
+        "usage: echo_color -b <backcolor> -t <textcolor> -d <decoration> [Text]\n"
+        "Text Color\n"
+        "30 => Black\n"
+        "31 => Red\n"
+        "32 => Green\n"
+        "33 => Yellow\n"
+        "34 => Blue\n"
+        "35 => Magenta\n"
+        "36 => Cyan\n"
+        "37 => White\n"
+        "\n"
+        "Background color\n"
+        "40 => Black\n"
+        "41 => Red\n"
+        "42 => Green\n"
+        "43 => Yellow\n"
+        "44 => Blue\n"
+        "45 => Magenta\n"
+        "46 => Cyan\n"
+        "47 => White\n"
+        "\n"
+        "Text decoration\n"
+        "0 => All attributs off (ノーマル)\n"
+        "1 => Bold on (太字)\n"
+        "4 => Underscore (下線)\n"
+        "5 => Blink on (点滅)\n"
+        "7 => Reverse video on (色反転)\n"
+        "8 => Concealed on\n"
+        "\n"
+        "Special Word\n"
+        "/# = Speace\n"
+        "/! = Speace*2\n"
+        "/^ = Tab Speace"
+    )
+
+    sys.exit()
+
+#== Define ==#
+blk = False
+t = False
+b = False
+d = False
+dics = {}
+lists = ""
+
+#== Code ==#
+for i in sys.argv[1:]:
+    def set_types(name):
+        try:
+            dic[name] = str(int(i))
+            dic["args"] += 1
+            mode = False
+            return mode
+        except:
+            print("Error: The argument of " + name +" is a number.")
+            sys.exit()
+
+    if "-" in i or blk is True:
+        if blk is False:
+            blk = True
+            dic = {}
+            dic["args"] = 0
+
+        if i == "-t":
+            t = True
+        elif i == "-b":
+            b = True
+        elif i == "-d":
+            d = True
+        elif i == "-h":
+            usage()
+        else:
+            if t is True:
+                t = set_types("t")
+            elif b is True:
+                b = set_types("b")
+            elif d is True:
+                d = set_types("d")
+            else:
+                dic["txt"] = i
+                
+                try:
+                    dics[list(dics.keys())[-1]+1] = dic
+                except:
+                    dics[0] = dic
+                
+                blk = False
+    else:
+        dic = {}
+        dic["txt"] = i
+                
+        try:
+            dics[list(dics.keys())[-1]+1] = dic
+        except:
+            dics[0] = dic
+
+for i in dics:
+    dic = dics[i]
+    try:
+        if dic["args"] > 0:
+            option = "\033["
+            for name in "t", "b", "d":
+                if name in dic:
+                    if dic["args"] > 1:
+                        option += dic[name] + ";"
+                        dic["args"] -= 1
+                    else:
+                        option += dic[name] + "m"
+            lists += option + dic["txt"] + "\033[00m"
+    except:
+        lists += "\033[00m" + dic["txt"].replace("/^", "/!/!").replace("/!", "/#/#").replace("/#", " ")
+
+print(lists)

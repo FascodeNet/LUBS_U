@@ -25,7 +25,7 @@ iso_filename="${iso_name}-${iso_version}-${arch}.iso"
 # _msg_info <message>
 _msg_info () {
     local _msg="${@}"
-    echo -e "\033[0;36m[LUBS Core] \033[0;32mINFO:\033[0;39m ${_msg}"
+    "${script_path}/echo_color"  -t 36 "[LUBS Core]" /! -t 32 "INFO:" "/#${_msg}"
 }
 
 # Show an ERROR message then exit with status
@@ -33,7 +33,7 @@ _msg_info () {
 _msg_error() {
     local _msg="${1}"
     local _error=${2}
-    echo -e "\033[0;36m[LUBS Core] \033[0;31mERROR:\033[0;39m ${_msg}" >&2
+    "${script_path}/echo_color" -t 36 "[LUBS Core]" /! -t 31 "ERROR:" "/#${_msg}" >&2
     if [[ ! ${_error} = 0 ]]; then
         exit ${_error}
     fi
