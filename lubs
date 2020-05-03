@@ -6,11 +6,12 @@ export LANG=C
 
 
 arch=amd64
-work_dir="work"
+script_path=$(readlink -f ${0%/*})
+work_dir="${script_path}work"
 cache_dir="${work_dir}/cache"
 out_dir="${work_dir}/out"
-script_path=$(readlink -f ${0%/*})
 channels_dir="${script_path}/channels"
+isolinux_dir="${script_path}/isolinux"
 codename="focal"
 mirror="http://ftp.jaist.ac.jp/pub/Linux/ubuntu/"
 
@@ -234,49 +235,14 @@ make_bootfiles() {
 }
 
 make_grubcfg() {
-local job_name
-job_name="grubcfg"
-_msg_start "${job_name}"
+    local job_name
+    job_name="grubcfg"
+    _msg_start "${job_name}"
 
-touch "${out_dir}/ubuntu"
-cat <<EOF > ${out_dir}/isolinux/grub.cfg
+    touch "${out_dir}/ubuntu"
+    cp ${isolinux_dir}/grub.cfg ${out_dir}/isolinux/grub.cfg
 
-search --set=root --file /ubuntu
-
-insmod all_video
-
-set default="0"
-set timeout=30
-
-menuentry "Try Ubuntu FS without installing" {
-   linux /casper/vmlinuz boot=casper quiet splash ---
-   initrd /casper/initrd
-}
-
-menuentry "Install Ubuntu FS" {
-   linux /casper/vmlinuz boot=casper only-ubiquity quiet splash ---
-   initrd /casper/initrd
-}
-
-menuentry "Check disc for defects" {
-   linux /casper/vmlinuz boot=casper integrity-check quiet splash ---
-   initrd /casper/initrd
-}
-
-menuentry "Test memory Memtest86+ (BIOS)" {
-   linux16 /install/memtest86+
-}
-
-menuentry "Test memory Memtest86 (UEFI, long load time)" {
-   insmod part_gpt
-   insmod search_fs_uuid
-   insmod chain
-   loopback loop /install/memtest86
-   chainloader (loop,gpt1)/efi/boot/BOOTX64.efi
-}
-EOF
-
-_msg_end "${job_name}"
+    _msg_end "${job_name}"
 }
 
 make_manifest() {
@@ -307,23 +273,13 @@ make_squashfs() {
 }
 
 make_deifnes() {
-local job_name
-job_name="defines"
-_msg_start "${job_name}"
+    local job_name
+    job_name="defines"
+    _msg_start "${job_name}"
 
-cat <<EOF > ${out_dir}/README.diskdefines
-#define DISKNAME  Ubuntu from scratch
-#define TYPE  binary
-#define TYPEbinary  1
-#define ARCH  amd64
-#define ARCHamd64  1
-#define DISKNUM  1
-#define DISKNUM1  1
-#define TOTALNUM  0
-#define TOTALNUM0  1
-EOF
+    cp ${isolinux_dir}/README.diskdefines ${out_dir}/README.diskdefines
 
-_msg_end "${job_name}"
+    _msg_end "${job_name}"
 }
 
 make_isolinux() {
