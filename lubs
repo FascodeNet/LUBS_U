@@ -10,6 +10,7 @@ work_dir="work"
 cache_dir="${work_dir}/cache"
 out_dir="${work_dir}/out"
 script_path=$(readlink -f ${0%/*})
+channels_dir="${script_path}/channels"
 codename="focal"
 mirror="http://ftp.jaist.ac.jp/pub/Linux/ubuntu/"
 
@@ -171,7 +172,7 @@ make_config() {
     run_cmd env -i bash -c 'DEBIAN_FRONTEND=noninteractive dpkg-reconfigure resolvconf'
 
     # NetworkManager
-    run_cmd echo -e "[main]\nrc-manager=resolvconf\nplugins=ifupdown,keyfile\n\ndns=dnsmasq\n[ifupdown]\nmanaged=false" > /etc/NetworkManager/NetworkManager.conf
+    cp ${channels_dir}/share/airootfs/etc/NetworkManager/NetworkManager.conf ${work_dir}/airootfs/etc/NetworkManager/NetworkManager.conf
 
     # Timezone
     #run_cmd echo -ne "UTC" > '/etc/timezone'
@@ -189,7 +190,7 @@ make_customize_airootfs() {
     _msg_start "${job_name}"
 
     # Overwrite airootfs with customize_airootfs.
-    cp -af "${script_path}/airootfs" "${work_dir}"
+    cp -af "${channels_dir}/share/airootfs" "${work_dir}"
 
     if [[ -f "${work_dir}/airootfs/root/customize_airootfs.sh" ]]; then
     	chmod 755 "${work_dir}/airootfs/root/customize_airootfs.sh"
