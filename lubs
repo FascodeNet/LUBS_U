@@ -264,6 +264,16 @@ make_iso() {
             /EFI/efiboot.img=isolinux/efiboot.img
 }
 
+make_chacksum() {
+    cd ../
+    _msg_info "Creating md5 checksum ..."
+    md5sum "${iso_filename}" > "${iso_filename}.md5"
+
+    "Creating sha256 checksum ..."
+    sha256sum "${iso_filename}" > "${iso_filename}.sha256"
+    cd - > /dev/null 2>&1
+}
+
 prepare_build
 run_once make_basefs
 run_once make_sourcelist
@@ -280,3 +290,4 @@ run_once make_deifnes
 run_once run_out make_isolinux
 run_once run_out make_md5sum
 run_once run_out make_iso
+run_once run_out make_chacksum
