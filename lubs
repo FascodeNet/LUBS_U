@@ -49,7 +49,7 @@ _msg_error() {
 run_once() {
     local name
 
-    if [[ "run_out" == "$1" ]]; then
+    if [[ "run_bootfiles" == "$1" ]]; then
         name="$2"
     else
         name="$1"
@@ -58,7 +58,7 @@ run_once() {
     if [[ ! -e "${work_dir}/build.${name}" ]]; then
         _msg_info "$(echo $name | sed "s@_@ @g") is starting."
 
-        if [[ "run_out" == "$1" ]]; then
+        if [[ "run_bootfiles" == "$1" ]]; then
             "$1" "$2"
         else
             "$1"
@@ -70,7 +70,7 @@ run_once() {
 }
 
 run_cmd() {
-    "${script_path}/lubs-chroot" "${work_dir}/airootfs" ${@}
+    "${script_path}/lubs-chroot" "${work_dir}/airootfs" "${@}"
 }
 
 run_bootfiles() {
@@ -133,8 +133,8 @@ make_systemd() {
 
 make_packages() {
     run_cmd apt-get update
-    grep -h -v ^'#' "${channels_dir}/share/packages.x86_64" > "${work_dir}/airootfs/installpkglist"
-    grep -h -v ^'#' "${channels_dir}/${channel_name}/packages.x86_64" >> "${work_dir}/airootfs/installpkglist"
+    grep -h -v ^'#' "${channels_dir}/share/packages.x86_64" | grep -v "^$" > "${work_dir}/airootfs/installpkglist"
+    grep -h -v ^'#' "${channels_dir}/${channel_name}/packages.x86_64" | grep -v "^$" >> "${work_dir}/airootfs/installpkglist"
     run_cmd env -i bash -c 'DEBIAN_FRONTEND=noninteractive apt-get --yes install $(echo $(<installpkglist))'
     rm ${work_dir}/airootfs/installpkglist
 }
