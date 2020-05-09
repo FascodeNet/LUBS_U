@@ -156,7 +156,7 @@ make_customize_airootfs() {
     cp -af "${channels_dir}/share/airootfs" "${work_dir}"
 
     if [[ -f "${work_dir}/airootfs/root/customize_airootfs.sh" ]]; then
-    	chmod 755 "${work_dir}/airootfs/root/customize_airootfs.sh"
+        chmod 755 "${work_dir}/airootfs/root/customize_airootfs.sh"
         run_cmd "/root/customize_airootfs.sh"
     fi
 }
