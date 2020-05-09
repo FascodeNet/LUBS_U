@@ -269,7 +269,7 @@ make_chacksum() {
     _msg_info "Creating md5 checksum ..."
     md5sum "${out_dir}/${iso_filename}" > "${out_dir}/${iso_filename}.md5"
 
-    "Creating sha256 checksum ..."
+    _msg_info "Creating sha256 checksum ..."
     sha256sum "${out_dir}/${iso_filename}" > "${out_dir}/${iso_filename}.sha256"
     cd - > /dev/null 2>&1
 }
@@ -290,4 +290,4 @@ run_once make_deifnes
 run_once run_out make_isolinux
 run_once run_out make_md5sum
 run_once run_out make_iso
-run_once run_out make_chacksum
+run_once make_chacksum
