@@ -29,7 +29,7 @@ channel_name="serene"
 
 # Show an INFO message
 # _msg_info <message>
-_msg_info () {
+_msg_info() {
     local _msg="${@}"
     "${script_path}/echo_color"  -t 36 "[LUBS Core]" /! -t 32 "INFO:" "/#" -t 0 "${_msg}"
 }
@@ -69,29 +69,30 @@ run_once() {
     fi
 }
 
-run_cmd () {
+run_cmd() {
     "${script_path}/lubs-chroot" "${work_dir}/airootfs" ${@}
 }
 
-run_bootfiles () {
+run_bootfiles() {
     cd "${bootfiles_dir}"
     "$1"
     cd - > /dev/null
 }
 
-_apt_install () {
+_apt_install() {
     run_cmd apt-get --yes install ${@}
 }
 
 
 
 
-prepare_build () {
+prepare_build() {
     if [[ ${EUID} -ne 0 ]]; then
         _msg_error "This script must be run as root." 1
     fi
     
     [[ ! -d "${work_dir}" ]] && mkdir -p "${work_dir}"
+    [[ ! -d "${out_dir}" ]] && mkdir -p "${out_dir}"
 
     local mount
     for mount in $(mount | awk '{print $3}' | grep $(realpath ${work_dir}) | sort -r); do
@@ -102,7 +103,7 @@ prepare_build () {
 }
 
 
-make_basefs () {
+make_basefs() {
     if [[ ! -d "${cache_dir}/${codename}" ]]; then
         _msg_info "Installing Ubuntu to '${cache_dir}/${codename}'..."
         mkdir -p "${cache_dir}/${codename}"
@@ -120,7 +121,7 @@ make_basefs () {
     # run_cmd apt-get upgrade
 }
 
-make_sourcelist () {
+make_sourcelist() {
     cp ${script_path}/source.list.d/${codename}/* ${work_dir}/airootfs/etc/apt
 }
 
@@ -130,7 +131,7 @@ make_systemd() {
     run_cmd ln -fs /etc/machine-id /var/lib/dbus/machine-id
 }
 
-make_packages () {
+make_packages() {
     run_cmd apt-get update
     grep -h -v ^'#' "${channels_dir}/share/packages.x86_64" > "${work_dir}/airootfs/installpkglist"
     grep -h -v ^'#' "${channels_dir}/${channel_name}/packages.x86_64" >> "${work_dir}/airootfs/installpkglist"
