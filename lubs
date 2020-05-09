@@ -24,6 +24,8 @@ iso_application="${os_name} Live/Rescue CD"
 iso_version="${codename}-$(date +%Y.%m.%d)"
 iso_filename="${iso_name}-${iso_version}-${arch}.iso"
 
+channel_name="serene"
+
 
 # Show an INFO message
 # _msg_info <message>
@@ -130,7 +132,8 @@ make_systemd() {
 
 make_packages () {
     run_cmd apt-get update
-    grep -h -v ^'#' ${script_path}/packages.x86_64 > ${work_dir}/airootfs/installpkglist
+    grep -h -v ^'#' "${channels_dir}/share/packages.x86_64" > "${work_dir}/airootfs/installpkglist"
+    grep -h -v ^'#' "${channels_dir}/${channel_name}/packages.x86_64" >> "${work_dir}/airootfs/installpkglist"
     run_cmd env -i bash -c 'DEBIAN_FRONTEND=noninteractive apt-get --yes install $(echo $(<installpkglist))'
     rm ${work_dir}/airootfs/installpkglist
 }
@@ -155,7 +158,20 @@ make_config() {
 
 make_customize_airootfs() {
     # Overwrite airootfs with customize_airootfs.
-    cp -af "${channels_dir}/share/airootfs" "${work_dir}"
+    local copy_airootfs
+
+    copy_airootfs() {
+        local i 
+        for i in "${@}"; do
+            local _dir="${1%/}"
+            if [[ -d "${_dir}" ]]; then
+                cp -af "${_dir}"/* "${work_dir}/airootfs"
+            fi
+        done
+    }
+
+    copy_airootfs "${channels_dir}/share/airootfs"
+    copy_airootfs "${channels_dir}/${channel_name}/airootfs"
 
     if [[ -f "${work_dir}/airootfs/root/customize_airootfs.sh" ]]; then
         chmod 755 "${work_dir}/airootfs/root/customize_airootfs.sh"
