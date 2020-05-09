@@ -129,8 +129,9 @@ make_systemd() {
 
 make_packages () {
     run_cmd apt-get update
-    installpkglist=($(grep -h -v ^'#' ${script_path}/packages.x86_64))
-    run_cmd sudo -i apt-get --yes install ${installpkglist[@]}
+    grep -h -v ^'#' ${script_path}/packages.x86_64 > ${work_dir}/airootfs/installpkglist
+    run_cmd env -i bash -c 'DEBIAN_FRONTEND=noninteractive apt-get --yes install $(echo $(<installpkglist))'
+    rm ${work_dir}/airootfs/installpkglist
 }
 
 make_config() {
