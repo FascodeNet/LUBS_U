@@ -71,7 +71,7 @@ run_cmd () {
     "${script_path}/lubs-chroot" "${work_dir}/airootfs" ${@}
 }
 
-run_out () {
+run_bootfiles () {
     cd "${bootfiles_dir}"
     "$1"
     cd - > /dev/null
@@ -287,7 +287,7 @@ run_once make_grubcfg
 run_once make_manifest
 run_once make_squashfs
 run_once make_deifnes
-run_once run_out make_isolinux
-run_once run_out make_md5sum
-run_once run_out make_iso
+run_once run_bootfiles make_isolinux
+run_once run_bootfiles make_md5sum
+run_once run_bootfiles make_iso
 run_once make_chacksum
