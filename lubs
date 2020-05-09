@@ -230,8 +230,6 @@ make_isolinux() {
         --fonts="" \
         "boot/grub/grub.cfg=isolinux/grub.cfg"
     cat /usr/lib/grub/i386-pc/cdboot.img isolinux/core.img > isolinux/bios.img
-
-    _msg_end "${job_name}"
 }
 
 make_md5sum() {
