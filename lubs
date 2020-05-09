@@ -12,6 +12,7 @@ cache_dir="${work_dir}/cache"
 bootfiles_dir="${work_dir}/bootfiles"
 channels_dir="${script_path}/channels"
 isolinux_dir="${script_path}/isolinux"
+out_dir="${script_path}/out"
 codename="focal"
 mirror="http://ftp.jaist.ac.jp/pub/Linux/ubuntu/"
 
@@ -256,7 +257,7 @@ make_iso() {
         -e EFI/efiboot.img \
         -no-emul-boot \
         -append_partition 2 0xef isolinux/efiboot.img \
-        -output "../${iso_filename}" \
+        -output "${out_dir}/${iso_filename}" \
         -graft-points \
             "." \
             /boot/grub/bios.img=isolinux/bios.img \
@@ -264,12 +265,12 @@ make_iso() {
 }
 
 make_chacksum() {
-    cd ../
+    cd ${out_dir}
     _msg_info "Creating md5 checksum ..."
-    md5sum "${iso_filename}" > "${iso_filename}.md5"
+    md5sum "${out_dir}/${iso_filename}" > "${out_dir}/${iso_filename}.md5"
 
     "Creating sha256 checksum ..."
-    sha256sum "${iso_filename}" > "${iso_filename}.sha256"
+    sha256sum "${out_dir}/${iso_filename}" > "${out_dir}/${iso_filename}.sha256"
     cd - > /dev/null 2>&1
 }
 
