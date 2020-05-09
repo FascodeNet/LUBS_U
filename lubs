@@ -123,6 +123,21 @@ make_basefs() {
 
 make_sourcelist() {
     cp ${script_path}/source.list.d/${codename}/* ${work_dir}/airootfs/etc/apt
+    run_cmd apt-get update
+
+    if [[ -f "${channels_dir}/${channel_name}/${channel_name}.list" ]] && [[ -f "${channels_dir}/${channel_name}/${channel_name}-list_key" ]]; then
+        source ${channels_dir}/${channel_name}/${channel_name}-list_key
+
+        if [[ ! -f "${cache_dir}/${channel_name}.key" ]]; then
+            wget -q -O ${cache_dir}/${channel_name}.key "${url}"
+        fi
+
+        _apt_install gnupg
+        cp ${cache_dir}/${channel_name}.key ${work_dir}/airootfs/${channel_name}.key
+        run_cmd apt-key add ${channel_name}.key
+        cp ${channels_dir}/${channel_name}/${channel_name}.list ${work_dir}/airootfs/etc/apt/sources.list.d
+        run_cmd apt-get update
+    fi
 }
 
 make_systemd() {
@@ -132,7 +147,6 @@ make_systemd() {
 }
 
 make_packages() {
-    run_cmd apt-get update
     grep -h -v ^'#' "${channels_dir}/share/packages.x86_64" | grep -v "^$" > "${work_dir}/airootfs/installpkglist"
     grep -h -v ^'#' "${channels_dir}/${channel_name}/packages.x86_64" | grep -v "^$" >> "${work_dir}/airootfs/installpkglist"
     run_cmd env -i bash -c 'DEBIAN_FRONTEND=noninteractive apt-get --yes install $(echo $(<installpkglist))'
