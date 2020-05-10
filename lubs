@@ -24,12 +24,23 @@ iso_filename="${iso_name}-${iso_version}-${arch}.iso"
 
 channel_name="serene"
 
+debug=false
+
 
 # Show an INFO message
 # _msg_info <message>
 _msg_info() {
     local _msg="${@}"
-    "${script_path}/echo_color"  -t 36 "[LUBS Core]" /! -t 32 "INFO:" "/#" -t 0 "${_msg}"
+    "${script_path}/echo_color"  -t 36 "[LUBS Core]" /! -t 32 " INFO:" "/#" -t 0 "${_msg}"
+}
+
+# Show an debug message
+# _msg_debug <message>
+_msg_debug() {
+    if [[ "${debug}" = true ]]; then
+        local _msg="${@}"
+        "${script_path}/echo_color"  -t 36 "[LUBS Core]" /! -t 35 "Debug:" "/#" -t 0 "${_msg}"
+    fi
 }
 
 # Show an ERROR message then exit with status
@@ -324,14 +335,17 @@ make_checksum() {
 
 
 # Parse options
-while getopts 'w:o:ha:-:m:c:' arg; do
+while getopts 'w:o:ha:-:m:c:d' arg; do
     case "${arg}" in
-        w) work_dir="${OPTARG}" ;;
-        o) out_dir="${OPTARG}" ;;
-        h) _usage; exit 0 ;;
         a) arch="${OPTARG}" ;;
         c) codename="${OPTARG}" ;;
+        d) debug=true ;;
+        h) _usage; exit 0 ;;
         m) mirror="${OPTARG}" ;;
+        o) out_dir="${OPTARG}" ;;
+        w) work_dir="${OPTARG}" ;;
+
+        # Long options
         -)
             case "${OPTARG}" in
                 help) _usage; exit 0 ;;
@@ -341,6 +355,8 @@ while getopts 'w:o:ha:-:m:c:' arg; do
                     ;;
             esac
             ;;
+        
+        # Error
         *)
            _msg_error "Invalid argument '${arg}'"
            _usage 1
