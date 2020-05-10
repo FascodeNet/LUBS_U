@@ -1,24 +1,39 @@
+#[ Apt utils ]
+apt-transport-https
+
+#[ Base ]
 ubuntu-standard
-casper
-lupin-casper
+locales
+
+#[ Boot utils ]
+os-prober
+
+#[ Editor ]
+nano
+vim
+
+#[ Hardware utils ]
 discover
 laptop-detect
-os-prober
+
+#[ Live Boot utils ]
+casper
+lupin-casper
+
+#[ Network ]
 network-manager
-resolvconf
 net-tools
-wireless-tools
+resolvconf
 wpagui
-locales
+wireless-tools
+
+#[ Ubiquity ]
 ubiquity
 ubiquity-casper
 ubiquity-frontend-gtk
 ubiquity-slideshow-ubuntu
 ubiquity-ubuntu-artwork
-clamav-daemon
-terminator
-apt-transport-https
+
+#[ Utils ]
 curl
-vim
-nano
 less
