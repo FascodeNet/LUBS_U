@@ -8,14 +8,11 @@ export LANG=C
 arch=amd64
 script_path=$(readlink -f ${0%/*})
 work_dir="${script_path}/work"
-cache_dir="${work_dir}/cache"
-bootfiles_dir="${work_dir}/bootfiles"
 channels_dir="${script_path}/channels"
 isolinux_dir="${script_path}/isolinux"
 out_dir="${script_path}/out"
 codename="focal"
 mirror="http://ftp.jaist.ac.jp/pub/Linux/ubuntu/"
-
 os_name="Ubuntu"
 iso_name="ubuntu"
 iso_label="${os_name}_${codename}_${arch}"
@@ -83,7 +80,22 @@ _apt_install() {
     run_cmd apt-get --no-install-recommends --yes install ${@}
 }
 
-
+# Show help
+_usage () {
+    echo "usage ${0} [options] [channel]"
+    echo
+    echo " General options:"
+    echo
+    echo "    -a                 Set architecture"
+    echo "                        Default: ${arch}"
+    echo "    -h                 This help message and exit."
+    echo
+    echo "    -o <out_dir>       Set the output directory"
+    echo "                        Default: ${out_dir}"
+    echo "    -w <work_dir>      Set the working directory"
+    echo "                        Default: ${work_dir}"
+    echo
+}
 
 
 prepare_build() {
@@ -304,6 +316,34 @@ make_checksum() {
     sha256sum "${iso_filename}" > "${iso_filename}.sha256"
     cd - > /dev/null 2>&1
 }
+
+
+# Parse options
+while getopts 'a:w:o:g:p:c:t:hbk:xs:jlu:d-:' arg; do
+    case "${arg}" in
+        w) work_dir="${OPTARG}" ;;
+        o) out_dir="${OPTARG}" ;;
+        h) _usage; exit 0 ;;
+        a) arch="${OPTARG}" ;;
+        -)
+            case "${OPTARG}" in
+                help) _usage; exit 0 ;;
+                *)
+                    _msg_error "Invalid argument '${OPTARG}'"
+                    _usage 1
+                    ;;
+            esac
+            ;;
+        *)
+           _msg_error "Invalid argument '${arg}'"
+           _usage 1
+           ;;
+    esac
+done
+
+cache_dir="${work_dir}/cache"
+bootfiles_dir="${work_dir}/bootfiles"
+
 
 prepare_build
 run_once make_basefs
