@@ -4,17 +4,18 @@ set -e -u
 
 export LANG=C
 
-
-arch=amd64
 script_path=$(readlink -f ${0%/*})
-work_dir="${script_path}/work"
 channels_dir="${script_path}/channels"
 isolinux_dir="${script_path}/isolinux"
-out_dir="${script_path}/out"
+
 codename="focal"
 mirror="http://ftp.jaist.ac.jp/pub/Linux/ubuntu/"
 os_name="Ubuntu"
 iso_name="ubuntu"
+
+arch=amd64
+work_dir="${script_path}/work"
+out_dir="${script_path}/out"
 iso_label="${os_name}_${codename}_${arch}"
 iso_publisher='Fascode Network <https://fascode.net>'
 iso_application="${os_name} Live/Rescue CD"
@@ -88,12 +89,16 @@ _usage () {
     echo
     echo "    -a                 Set architecture"
     echo "                        Default: ${arch}"
-    echo "    -h                 This help message and exit."
-    echo
+    echo "    -c                 Set ubuntu codename"
+    echo "                        Default; ${codename}"
+    echo "    -m                 Set apt mirror server."
+    echo "                        ${mirror}"
     echo "    -o <out_dir>       Set the output directory"
     echo "                        Default: ${out_dir}"
     echo "    -w <work_dir>      Set the working directory"
     echo "                        Default: ${work_dir}"
+    echo
+    echo "    -h                 This help message and exit"
     echo
 }
 
@@ -319,12 +324,14 @@ make_checksum() {
 
 
 # Parse options
-while getopts 'a:w:o:g:p:c:t:hbk:xs:jlu:d-:' arg; do
+while getopts 'w:o:ha:-:m:c:' arg; do
     case "${arg}" in
         w) work_dir="${OPTARG}" ;;
         o) out_dir="${OPTARG}" ;;
         h) _usage; exit 0 ;;
         a) arch="${OPTARG}" ;;
+        c) codename="${OPTARG}" ;;
+        m) mirror="${OPTARG}" ;;
         -)
             case "${OPTARG}" in
                 help) _usage; exit 0 ;;
