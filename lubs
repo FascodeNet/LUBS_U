@@ -80,7 +80,7 @@ run_bootfiles() {
 }
 
 _apt_install() {
-    run_cmd apt-get --yes install ${@}
+    run_cmd apt-get --no-install-recommends --yes install ${@}
 }
 
 
@@ -149,7 +149,7 @@ make_systemd() {
 make_packages() {
     grep -h -v ^'#' "${channels_dir}/share/packages.x86_64" | grep -v "^$" > "${work_dir}/airootfs/installpkglist"
     grep -h -v ^'#' "${channels_dir}/${channel_name}/packages.x86_64" | grep -v "^$" >> "${work_dir}/airootfs/installpkglist"
-    run_cmd env -i bash -c 'DEBIAN_FRONTEND=noninteractive apt-get --yes install $(echo $(<installpkglist))'
+    run_cmd env -i bash -c 'DEBIAN_FRONTEND=noninteractive apt-get --no-install-recommends --yes install $(echo $(<installpkglist))'
     rm ${work_dir}/airootfs/installpkglist
 }
 
