@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-set -e -u
+set -e
+# set -u
 
 export LANG=C
 
@@ -117,18 +118,19 @@ _usage () {
     echo
     echo " General options:"
     echo
-    echo "    -a                 Set architecture"
-    echo "                        Default: ${arch}"
-    echo "    -c                 Set ubuntu codename"
-    echo "                        Default; ${codename}"
-    echo "    -m                 Set apt mirror server."
-    echo "                        ${mirror}"
-    echo "    -o <out_dir>       Set the output directory"
-    echo "                        Default: ${out_dir}"
-    echo "    -w <work_dir>      Set the working directory"
-    echo "                        Default: ${work_dir}"
+    echo "    -a | --arch <str>      Set architecture"
+    echo "                           Default: ${arch}"
+    echo "    -c | --codename <str>  Set ubuntu codename"
+    echo "                           Default: ${codename}"
+    echo "    -m | --mirror <url>    Set apt mirror server."
+    echo "                           Default: ${mirror}"
+    echo "    -o | --out <out_dir>   Set the output directory"
+    echo "                           Default: ${out_dir}"
+    echo "    -w | --work <work_dir> Set the working directory"
+    echo "                           Default: ${work_dir}"
     echo
-    echo "    -h                 This help message and exit"
+    echo "    -d | --debug           "
+    echo "    -h | --help            This help message and exit"
     echo
 }
 
@@ -365,33 +367,79 @@ make_checksum() {
 }
 
 
-# Parse options
-while getopts 'w:o:ha:-:m:c:d' arg; do
-    case "${arg}" in
-        a) arch="${OPTARG}" ;;
-        c) codename="${OPTARG}" ;;
-        d) debug=true ;;
-        h) _usage; exit 0 ;;
-        m) mirror="${OPTARG}" ;;
-        o) out_dir="${OPTARG}" ;;
-        w) work_dir="${OPTARG}" ;;
+# 引数解析（）
+# 参考記事：https://0e0.pw/ci83 https://0e0.pw/VJlg
 
-        # Long options
-        -)
-            case "${OPTARG}" in
-                help) _usage; exit 0 ;;
-                *)
-                    _msg_error "Invalid argument '${OPTARG}'"
-                    _usage 1
-                    ;;
-            esac
+_opt_short="w:o:ha:-:m:c:d"
+_opt_long="help,arch:,codename:,debug,help,mirror:,out:,work"
+OPT=$(getopt -o ${_opt_short} -l ${_opt_long} -- "${@}")
+if [[ ${?} != 0 ]]; then
+    exit 1
+fi
+eval set -- "${OPT}"
+while :; do
+    case ${1} in
+        -a | --arch)
+            if [[ -z ${2} ]]; then
+                _msg_error "Please specify the architecture."
+                exit 1
+            else
+                arch="${2}"
+            fi
+            shift 2
             ;;
-        
-        # Error
+        -c | --codename)
+            if [[ -z ${2} ]]; then
+                _msg_error "Please specify the codename."
+                exit 1
+            else
+                codename="${2}"
+            fi
+            shift 2
+            ;;
+        -d | --debug)
+            debug=true
+            shift 1
+            ;;
+        -h | --help)
+            _usage
+            exit 0
+            ;;
+        -m | --mirror)
+            if [[ -z ${2} ]]; then
+                _msg_error "Please specify the mirror server."
+                exit 1
+            else
+                mirror="${2}"
+            fi
+            shift 2
+            ;;
+        -o | --out)
+            if [[ -z ${2} ]]; then
+                _msg_error "Please specify the out dir."
+                exit 1
+            else
+                out_dir="${2}"
+            fi
+            shift 2
+            ;;
+        -w | --work)
+            if [[ -z ${2} ]]; then
+                _msg_error "Please specify the out dir."
+                exit 1
+            else
+                work_dir="${2}"
+            fi
+            shift 2
+            ;;
+        --)
+            shift
+            break
+            ;;
         *)
-           _msg_error "Invalid argument '${arg}'"
-           _usage 1
-           ;;
+            _msg_error "Invalid argument '${1}'"
+            _usage 1
+            ;;
     esac
 done
 
