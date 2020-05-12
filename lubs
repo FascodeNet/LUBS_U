@@ -92,6 +92,25 @@ _apt_install() {
     run_cmd apt-get --no-install-recommends --yes install ${@}
 }
 
+# rm helper
+# Delete the file if it exists.
+# For directories, rm -rf is used.
+# If the file does not exist, skip it.
+# remove <file> <file> ...
+remove() {
+    local _list
+    local _file
+    _list=($(echo "$@"))
+    for _file in "${_list[@]}"; do
+        _msg_debug "Removeing ${_file}"
+        if [[ -f ${_file} ]]; then
+            rm -f "${_file}"
+        elif [[ -d ${_file} ]]; then
+            rm -rf "${_file}"
+        fi
+    done
+}
+
 # Show help
 _usage () {
     echo "usage ${0} [options] [channel]"
@@ -175,10 +194,17 @@ make_systemd() {
 }
 
 make_packages() {
-    grep -h -v ^'#' "${channels_dir}/share/packages.x86_64" | grep -v "^$" > "${work_dir}/airootfs/installpkglist"
-    grep -h -v ^'#' "${channels_dir}/${channel_name}/packages.x86_64" | grep -v "^$" >> "${work_dir}/airootfs/installpkglist"
-    run_cmd env -i bash -c 'DEBIAN_FRONTEND=noninteractive apt-get --no-install-recommends --yes install $(echo $(<installpkglist))'
-    rm ${work_dir}/airootfs/installpkglist
+    remove "${work_dir}/airootfs/installpkglist"
+
+    if [[ -f "${channels_dir}/share/packages.${arch}" ]]; then
+        grep -h -v ^'#' "${channels_dir}/share/packages.${arch}" | grep -v "^$" >> "${work_dir}/airootfs/installpkglist"
+    fi
+    if [[ -f "${channels_dir}/${channel_name}/packages.${arch}" ]]; then
+        grep -h -v ^'#' "${channels_dir}/${channel_name}/packages.${arch}" | grep -v "^$" >> "${work_dir}/airootfs/installpkglist"
+    fi
+    if [[ -n "$(echo $(<"${work_dir}/airootfs/installpkglist"))" ]]; then
+        run_cmd env -i bash -c 'DEBIAN_FRONTEND=noninteractive apt-get --no-install-recommends --yes install $(echo $(<installpkglist))'
+    fi
 }
 
 make_config() {
@@ -269,7 +295,7 @@ make_deifnes() {
 
 make_isolinux() {
     grub-mkstandalone \
-        --format=x86_64-efi \
+        --format=${arch}-efi \
         --output=isolinux/bootx64.efi \
         --locales="" \
         --fonts="" \
