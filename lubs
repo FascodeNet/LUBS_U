@@ -294,8 +294,13 @@ make_deifnes() {
 }
 
 make_isolinux() {
+    if [[ "${arch}" = "amd64" ]]; then
+        local _arch="x86_64"
+    else
+        local _arch="${arch}"
+    fi
     grub-mkstandalone \
-        --format=${arch}-efi \
+        --format=${_arch}-efi \
         --output=isolinux/bootx64.efi \
         --locales="" \
         --fonts="" \
