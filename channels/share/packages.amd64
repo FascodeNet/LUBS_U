@@ -1,39 +1,175 @@
-#[ Apt utils ]
-apt-transport-https
-
-#[ Base ]
-ubuntu-standard
-locales
-
-#[ Boot utils ]
-os-prober
-
-#[ Editor ]
-nano
-vim
-
-#[ Hardware utils ]
+#[ admin ]
+acpi-support
+bluez-obexd
+btrfs-progs
+bubblewrap
+command-not-found
 discover
-laptop-detect
+dmraid
+gdebi-core
+gdisk
+hdparm
+isolinux
+language-selector-gnome
+lvm2
+media-player-info
+mobile-broadband-provider-info
+mokutil
+rtkit
+syslinux-utils
+unattended-upgrades
+xfsprogs
 
-#[ Live Boot utils ]
-casper
-lupin-casper
+#[ misc ]
+at-spi2-core
+dns-root-data
+installation-report
+poppler-data
+session-migration
 
-#[ Network ]
-network-manager
+#[ net ]
+avahi-utils
+dnsutils
+ftp
+geoip-database
+iputils-tracepath
+modemmanager
 net-tools
+publicsuffix
 resolvconf
-wpagui
-wireless-tools
+rsync
+tcpdump
+telnet
 
-#[ Ubiquity ]
-ubiquity
-ubiquity-casper
-ubiquity-frontend-gtk
-ubiquity-slideshow-ubuntu
-ubiquity-ubuntu-artwork
+#[ gnome ]
+baobab
+cheese-common
+gnome-system-monitor
+gnome-themes-standard
+indicator-application
+seahorse
+system-tools-backends
+tango-icon-theme
+yelp
+zenity
 
-#[ Utils ]
+#[ web ]
 curl
-less
+
+#[ utils ]
+dconf-editor
+dmidecode
+fakeroot
+fontconfig
+irqbalance
+jq
+lshw
+ltrace
+mlocate
+powermgmt-base
+rng-tools
+strace
+syslinux
+syslinux-common
+unzip
+usbmuxd
+
+#[ libs ]
+dconf-service
+discover-data
+gconf2
+kactivities-bin
+kpackagelauncherqml
+kwayland-data
+
+#[ interpreters ]
+default-jre
+
+#[ x11 ]
+desktop-base
+greybird-gtk-theme
+notify-osd
+notify-osd-icons
+numix-blue-gtk-theme
+orage
+slick-greeter
+xarchiver
+xbitmaps
+xfce4
+xfce4-notifyd
+xfce4-screenshooter
+xfce4-terminal
+xfonts-scalable
+xorg
+xscreensaver
+xubuntu-icon-theme
+
+#[ python ]
+dh-python
+mugshot
+
+#[ otherosfs ]
+dosfstools
+xorriso
+
+#[ editors ]
+ed
+nano
+
+#[ text ]
+enchant
+gsfonts
+qpdf
+wamerican
+wbritish
+wdiff
+
+#[ fonts ]
+fonts-dejavu-extra
+fonts-droid-fallback
+fonts-freefont-ttf
+fonts-noto-mono
+fonts-takao
+
+#[ vcs ]
+git
+
+#[ doc ]
+info
+
+#[ comm ]
+ippusbxd
+
+#[ graphics ]
+jp2a
+netpbm
+printer-driver-gutenprint
+sane-utils
+viewnior
+vlc
+vlc-data
+
+#[ kde ]
+kactivitymanagerd
+kdeconnect
+sonnet-plugins
+
+#[ devel ]
+lintian
+
+#[ sound ]
+mpg123
+pavucontrol
+pulseaudio
+sound-theme-freedesktop
+
+#[ xfce ]
+tumbler
+xfce4-volumed
+xfpanel-switch
+
+#[ metapackages ]
+ubuntu-restricted-addons
+
+#[ localization ]
+vlc-l10n
