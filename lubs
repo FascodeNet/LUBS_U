@@ -197,16 +197,19 @@ make_sourcelist() {
 
         run_cmd apt-get update
     fi
+    
+    # PPA
+    local PPA_FILELIST
+    local _PPA_FILE
+    local _ppa
 
-    if [[ -n $(find ${channels_dir}/*/ppa -type f) ]]; then; then
-        _apt_install software-properties-common
-
-        for ppa_list in $(find ${channels_dir}/* -type f -name ppa); do
-            for ppa in $(grep -h -v ^'#' ${ppa-list}); do
-                run_cmd add-apt-repository --yes "${ppa}"
-            done
+    PPA_FILELIST=("${channels_dir}/${channel_name}/ppa_list.${arch}"
+    _apt_install software-properties-common
+    for _PPA_FILE in ${PPA_FILELIST[@]}; do
+        for _ppa in $(grep -h -v ^'#' ${_PPA_FILE}); do
+            run_cmd add-apt-repository --yes "${_ppa}"
         done
-    fi
+    done
 }
 
 make_systemd() {
