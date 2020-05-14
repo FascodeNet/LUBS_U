@@ -176,17 +176,25 @@ make_sourcelist() {
     cp ${script_path}/source.list.d/${codename}/* ${work_dir}/airootfs/etc/apt
     run_cmd apt-get update
 
-    if [[ -f "${channels_dir}/${channel_name}/${channel_name}.list" ]] && [[ -f "${channels_dir}/${channel_name}/${channel_name}-list_key" ]]; then
-        source ${channels_dir}/${channel_name}/${channel_name}-list_key
-
-        if [[ ! -f "${cache_dir}/${channel_name}.key" ]]; then
-            wget -q -O ${cache_dir}/${channel_name}.key "${url}"
-        fi
-
+    if [[ -n $(find ${channels_dir}/*/repo -type f) ]]; then
         _apt_install gnupg
-        cp ${cache_dir}/${channel_name}.key ${work_dir}/airootfs/${channel_name}.key
-        run_cmd apt-key add ${channel_name}.key
-        cp ${channels_dir}/${channel_name}/${channel_name}.list ${work_dir}/airootfs/etc/apt/sources.list.d
+
+        for repo in $(find ${channels_dir}/*/repo -name *.list); do
+            key="$(dirname $repo)/$(basename $repo | sed "s/list/key/")"
+            
+            if [[ -f "$key" ]]; then
+                if $(file $key | grep -q "PGP/GPG key"); then
+                    cp $key ${work_dir}/airootfs/$(basename $key)
+                else
+                    wget -q -O ${work_dir}/airootfs/$(basename $key) $(cat $key)
+                fi
+
+                run_cmd apt-key add $(basename $key)
+                rm ${work_dir}/airootfs/$(basename $key)
+                cp $repo ${work_dir}/airootfs/etc/apt/sources.list.d
+            fi
+        done
+
         run_cmd apt-get update
     fi
 }

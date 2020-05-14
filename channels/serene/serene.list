@@ -1,8 +1,0 @@
-## SereneLinux package repository list
-## edited in 23 Apr 2020
-
-## Stable Package Repository
-deb [arch=amd64] http://osdn.net/projects/serene/storage/repo/serene ubuntu main
-
-## Untable Package Repository
-#deb [arch=amd64] http://xn--d-8o2b.com/repo/serene ubuntu main
