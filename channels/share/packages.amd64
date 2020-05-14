@@ -1,13 +1,17 @@
 #[ admin ]
 acpi-support
+aptdaemon-data
+apturl
 bluez-obexd
 btrfs-progs
 bubblewrap
 command-not-found
+dbus-user-session
 discover
 dmraid
 gdebi-core
 gdisk
+gufw
 hdparm
 isolinux
 language-selector-gnome
@@ -16,47 +20,37 @@ media-player-info
 mobile-broadband-provider-info
 mokutil
 rtkit
+synaptic
 syslinux-utils
 unattended-upgrades
 xfsprogs
 
-#[ misc ]
-at-spi2-core
-dns-root-data
-installation-report
-poppler-data
-session-migration
-
-#[ net ]
-avahi-utils
-dnsutils
-ftp
-geoip-database
-iputils-tracepath
-modemmanager
-net-tools
-publicsuffix
-resolvconf
-rsync
-tcpdump
-telnet
+#[ installer ]
+ubiquity-frontend-debconf
+ubiquity-frontend-gtk
+ubiquity-ubuntu-artwork
+ubiquity-slideshow-xubuntu
 
 #[ gnome ]
+apport-gtk
 baobab
 cheese-common
+cups-pk-helper
+gnome-software-plugin-snap
+gnome-startup-applications
 gnome-system-monitor
-gnome-themes-standard
+gnome-themes-extra
+gparted
 indicator-application
+lightdm-settings
 seahorse
+simple-scan
 system-tools-backends
-tango-icon-theme
 yelp
 zenity
 
-#[ web ]
-curl
-
 #[ utils ]
+apport-symptoms
 dconf-editor
 dmidecode
 fakeroot
@@ -66,57 +60,18 @@ jq
 lshw
 ltrace
 mlocate
+p7zip-full
 powermgmt-base
 rng-tools
 strace
 syslinux
 syslinux-common
+time
 unzip
 usbmuxd
 
-#[ libs ]
-dconf-service
-discover-data
-gconf2
-kactivities-bin
-kpackagelauncherqml
-kwayland-data
-
-#[ interpreters ]
-default-jre
-
-#[ x11 ]
-desktop-base
-greybird-gtk-theme
-notify-osd
-notify-osd-icons
-numix-blue-gtk-theme
-orage
-slick-greeter
-xarchiver
-xbitmaps
-xfce4
-xfce4-notifyd
-xfce4-screenshooter
-xfce4-terminal
-xfonts-scalable
-xorg
-xscreensaver
-xubuntu-icon-theme
-
-#[ python ]
-dh-python
-mugshot
-
-#[ otherosfs ]
-dosfstools
-xorriso
-
-#[ editors ]
-ed
-nano
-
 #[ text ]
+aspell-en
 enchant
 gsfonts
 qpdf
@@ -124,52 +79,173 @@ wamerican
 wbritish
 wdiff
 
+#[ misc ]
+at-spi2-core
+dns-root-data
+installation-report
+p11-kit-modules
+poppler-data
+session-migration
+
+#[ net ]
+avahi-utils
+cups-browsed
+dnsutils
+ftp
+geoip-database
+iputils-arping
+iputils-tracepath
+modemmanager
+mtr-tiny
+net-tools
+network-manager-gnome
+publicsuffix
+resolvconf
+rsync
+samba-common-bin
+tcpdump
+telnet
+wireless-tools
+
+#[ web ]
+chromium-browser-l10n
+chromium-codecs-ffmpeg-extra
+curl
+
+#[ interpreters ]
+cpp-7
+default-jre
+
+#[ libs ]
+discover-data
+e2fslibs
+gconf2
+gnome-keyring-pkcs11
+gvfs-backends
+kactivities-bin
+kinit
+kpackagelauncherqml
+kwayland-data
+packagekit-tools
+qt5-gtk-platformtheme
+
+#[ x11 ]
+desktop-base
+greybird-gtk-theme
+notify-osd
+notify-osd-icons
+xarchiver
+xbitmaps
+xfonts-scalable
+xscreensaver
+xserver-xorg-input-evdev
+xserver-xorg-input-synaptics
+xserver-xorg-input-wacom
+xserver-xorg-legacy
+xserver-xorg-video-all
+xserver-xorg-video-intel
+xserver-xorg-video-qxl
+
+#[ icon and theme ]
+xubuntu-icon-theme
+numix-blue-gtk-theme
+tango-icon-theme
+
+#[ plymouth ]
+plymouth-label
+plymouth-theme-ubuntu-text
+plymouth-x11
+
+#[ display manager ]
+slick-greeter
+
+#[ python ]
+dh-python
+mugshot
+system-config-printer-udev
+
+#[ otherosfs ]
+dosfstools
+
+#[ localization ]
+e2fsprogs-l10n
+krb5-locales
+vlc-l10n
+
+#[ editors ]
+ed
+nano
+vim
+
 #[ fonts ]
 fonts-dejavu-extra
 fonts-droid-fallback
-fonts-freefont-ttf
+fonts-noto-cjk-extra
 fonts-noto-mono
 fonts-takao
 
-#[ vcs ]
-git
-
-#[ doc ]
-info
-
-#[ comm ]
-ippusbxd
+#[ devel ]
+gdbserver
+lintian
 
 #[ graphics ]
+gimp
+imagemagick-6-common
 jp2a
 netpbm
 printer-driver-gutenprint
 sane-utils
 viewnior
-vlc
-vlc-data
+
+#[ vcs ]
+git
+
+#[ video ]
+va-driver-all
+vdpau-driver-all
+vlc-plugin-notify
+vlc-plugin-samba
+vlc-plugin-skins2
+vlc-plugin-video-splitter
+vlc-plugin-visualization
+
+#[ doc ]
+info
+manpages-ja
+
+#[ comm ]
+ippusbxd
 
 #[ kde ]
 kactivitymanagerd
 kdeconnect
+kwayland-integration
 sonnet-plugins
-
-#[ devel ]
-lintian
 
 #[ sound ]
 mpg123
 pavucontrol
+phonon4qt5
 pulseaudio
 sound-theme-freedesktop
 
+#[ perl ]
+perl-openssl-defaults
+
 #[ xfce ]
 tumbler
+xfce4
+xfce4-notifyd
+xfce4-screenshooter
+xfce4-terminal
+xfce4-power-manager-plugins
 xfce4-volumed
+xfce4-whiskermenu-plugin
 xfpanel-switch
+xorg
+orage
+thunar-archive-plugin
+thunar-volman
 
 #[ metapackages ]
 ubuntu-restricted-addons
-
-#[ localization ]
-vlc-l10n
