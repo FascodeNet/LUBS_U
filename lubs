@@ -261,6 +261,7 @@ make_clean() {
 make_bootfiles() {
     run_cmd update-initramfs -c -k all
     _apt_install memtest86+
+    [[ -d "${bootfiles_dir}" ]] && rm -r "${bootfiles_dir}"
     mkdir -p ${bootfiles_dir}/{casper,isolinux,install}
     cp ${work_dir}/airootfs/boot/vmlinuz-*-*-generic ${bootfiles_dir}/casper/vmlinuz
     cp ${work_dir}/airootfs/boot/initrd.img-*-*-generic ${bootfiles_dir}/casper/initrd
