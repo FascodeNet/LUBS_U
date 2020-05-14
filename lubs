@@ -6,6 +6,8 @@ set -e
 export LANG=C
 
 script_path=$(readlink -f ${0%/*})
+
+cache_dir="${script_path}/cache"
 channels_dir="${script_path}/channels"
 isolinux_dir="${script_path}/isolinux"
 
@@ -443,7 +445,6 @@ while :; do
     esac
 done
 
-cache_dir="${work_dir}/cache"
 bootfiles_dir="${work_dir}/bootfiles"
 
 
