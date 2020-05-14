@@ -206,9 +206,11 @@ make_sourcelist() {
     PPA_FILELIST=("${channels_dir}/${channel_name}/ppa_list.${arch}"
     _apt_install software-properties-common
     for _PPA_FILE in ${PPA_FILELIST[@]}; do
-        for _ppa in $(grep -h -v ^'#' ${_PPA_FILE}); do
-            run_cmd add-apt-repository --yes "${_ppa}"
-        done
+        if [[ -f "${_PPA_FILE}" ]]; then
+            for _ppa in $(grep -h -v ^'#' ${_PPA_FILE}); do
+                run_cmd add-apt-repository --yes "${_ppa}"
+            done
+        fi
     done
 }
 
