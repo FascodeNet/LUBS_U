@@ -203,7 +203,7 @@ make_sourcelist() {
     local _PPA_FILE
     local _ppa
 
-    PPA_FILELIST=("${channels_dir}/${channel_name}/ppa_list.${arch}")
+    PPA_FILELIST=("${channels_dir}/share/ppa_list.${arch}" "${channels_dir}/${channel_name}/ppa_list.${arch}")
     _apt_install software-properties-common
     for _PPA_FILE in ${PPA_FILELIST[@]}; do
         if [[ -f "${_PPA_FILE}" ]]; then
