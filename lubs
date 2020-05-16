@@ -34,17 +34,21 @@ cache_only=false
 start_time="$(date +%s)"
 
 _msg_common() {
-    local _current_time="$(date +%s)"
-    local _time
+    if [[ "${debug}" = true ]]; then
+        local _current_time="$(date +%s)"
+        local _time
 
-    _time="$(("${_current_time}"-"${start_time}"))"
+        _time="$(("${_current_time}"-"${start_time}"))"
 
-    if [[ "${_time}" -ge 3600 ]]; then
-        echo "[$(date -d ${_time} +%H:%M%.S)]$("${script_path}/echo_color" -t 6 "[LUBS Core]")"
-    elif [[ "${_time}" -ge 60 ]]; then
-        echo "[00:$(date -d ${_time} +%M%.S)]$("${script_path}/echo_color" -t 6 "[LUBS Core]")"
+        if [[ "${_time}" -ge 3600 ]]; then
+            echo "[$(date -d ${_time} +%H:%M%.S)]$("${script_path}/echo_color" -t 6 "[LUBS Core]")"
+        elif [[ "${_time}" -ge 60 ]]; then
+            echo "[00:$(date -d ${_time} +%M%.S)]$("${script_path}/echo_color" -t 6 "[LUBS Core]")"
+        else
+            echo "[00:00.$(date -d ${_time} +%S)] $("${script_path}/echo_color" -t 6 "[LUBS Core]")"
+        fi
     else
-        echo "[00:00.$(date -d ${_time} +%S)] $("${script_path}/echo_color" -t 6 "[LUBS Core]")"
+        "${script_path}/echo_color" -t 6 "[LUBS Core]"
     fi
 }
 
