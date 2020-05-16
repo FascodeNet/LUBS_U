@@ -498,8 +498,7 @@ while :; do
         -o | --out)
             if [[ -z ${2} ]]; then
                 _msg_error "Please specify the out dir."
-                exit 1Do not use cache if interrupted on the way
-Change cache structure
+                exit 1
             fi
             shift 2
             ;;
