@@ -35,7 +35,7 @@ cache_only=false
 # _msg_info <message>
 _msg_info() {
     local _msg="${@}"
-    "${script_path}/echo_color"  -t 36 "[LUBS Core]" /! -t 32 " INFO:" "/#" -t 0 "${_msg}"
+    echo "$("${script_path}/echo_color" -t 6 "[LUBS Core]")  $("${script_path}/echo_color" -t 2 "Info:") ${_msg}"
 }
 
 # Show an debug message
@@ -43,7 +43,7 @@ _msg_info() {
 _msg_debug() {
     if [[ "${debug}" = true ]]; then
         local _msg="${@}"
-        "${script_path}/echo_color"  -t 36 "[LUBS Core]" /! -t 35 "Debug:" "/#" -t 0 "${_msg}"
+        echo "$("${script_path}/echo_color" -t 6 "[LUBS Core]")  $("${script_path}/echo_color" -t 3 "Debug:") ${_msg}"
     fi
 }
 
@@ -52,7 +52,7 @@ _msg_debug() {
 _msg_error() {
     local _msg="${1}"
     local _error=${2}
-    "${script_path}/echo_color" -t 36 "[LUBS Core]" /! -t 31 "ERROR:" "/#" -t 0 "${_msg}" >&2
+    echo "$("${script_path}/echo_color" -t 6 "[LUBS Core]")  $("${script_path}/echo_color" -t 1 "Error:") ${_msg}"
     if [[ ! ${_error} = 0 ]]; then
         exit ${_error}
     fi
