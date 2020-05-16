@@ -82,7 +82,7 @@ run_once() {
 }
 
 run_cmd() {
-    "${script_path}/lubs-chroot" "${work_dir}/airootfs" "${@}"
+    arch-chroot "${work_dir}/airootfs" "${@}"
 }
 
 run_bootfiles() {
