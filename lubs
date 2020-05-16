@@ -275,18 +275,34 @@ make_systemd() {
     run_cmd ln -fs /etc/machine-id /var/lib/dbus/machine-id
 }
 
-make_packages() {
-    remove "${work_dir}/airootfs/installpkglist"
+make_apt_packages() {
+    remove "${work_dir}/airootfs/aptpkglist"
 
     if [[ -f "${channels_dir}/share/packages.${arch}" ]]; then
-        grep -h -v ^'#' "${channels_dir}/share/packages.${arch}" | grep -v "^$" >> "${work_dir}/airootfs/installpkglist"
+        grep -h -v ^'#' "${channels_dir}/share/packages.${arch}" | grep -v "^$" >> "${work_dir}/airootfs/aptpkglist"
     fi
     if [[ -f "${channels_dir}/${channel_name}/packages.${arch}" ]]; then
-        grep -h -v ^'#' "${channels_dir}/${channel_name}/packages.${arch}" | grep -v "^$" >> "${work_dir}/airootfs/installpkglist"
+        grep -h -v ^'#' "${channels_dir}/${channel_name}/packages.${arch}" | grep -v "^$" >> "${work_dir}/airootfs/aptpkglist"
     fi
-    if [[ -n "$(echo $(<"${work_dir}/airootfs/installpkglist"))" ]]; then
-        run_cmd env -i bash -c 'DEBIAN_FRONTEND=noninteractive apt-get --no-install-recommends --yes install $(echo $(<installpkglist))'
+    if [[ -n "$(echo $(<"${work_dir}/airootfs/aptpkglist"))" ]]; then
+        run_cmd env -i bash -c 'DEBIAN_FRONTEND=noninteractive apt-get --no-install-recommends --yes install $(echo $(<aptpkglist))'
     fi
+    remove "${work_dir}/airootfs/aptpkglist"
+}
+
+make_snap_packages() {
+    remove "${work_dir}/airootfs/snappkglist"
+
+    if [[ -f "${channels_dir}/share/snap-packages.${arch}" ]]; then
+        grep -h -v ^'#' "${channels_dir}/share/snap-packages.${arch}" | grep -v "^$" >> "${work_dir}/airootfs/snappkglist"
+    fi
+    if [[ -f "${channels_dir}/${channel_name}/snap-packages.${arch}" ]]; then
+        grep -h -v ^'#' "${channels_dir}/${channel_name}/snap-packages.${arch}" | grep -v "^$" >> "${work_dir}/airootfs/snappkglist"
+    fi
+    if [[ -n "$(echo $(<"${work_dir}/airootfs/snappkglist"))" ]]; then
+        run_cmd env -i bash -c 'snap install $(echo $(<snappkglist))'
+    fi
+    remove "${work_dir}/airootfs/snappkglist"
 }
 
 make_config() {
@@ -533,7 +549,8 @@ prepare_build
 run_once make_basefs
 run_once make_sourcelist
 run_once make_systemd
-run_once make_packages
+run_once make_apt_packages
+# run_once make_snap_packages
 run_once make_config
 run_once make_customize_airootfs
 run_once make_clean
