@@ -151,6 +151,11 @@ prepare_build() {
         umount "${mount}"
     done
 
+    # Check codename
+    if [[ -z $(grep -h -v ^'#' ${channels_dir}/${channel_name}/codename.${arch} | grep -x ${codename}) ]]; then
+        _msg_error "This codename (${channel_name}) is not supported on this channel (${codename})."
+    fi
+
 }
 
 
