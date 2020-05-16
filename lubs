@@ -160,18 +160,31 @@ prepare_build() {
 
 
 make_basefs() {
-    if [[ ! -d "${cache_dir}/${codename}" ]]; then
-        _msg_info "Installing Ubuntu to '${cache_dir}/${codename}'..."
-        mkdir -p "${cache_dir}/${codename}"
-        debootstrap --arch=${arch} --include=linux-image-generic  --verbose --merged-usr "${codename}" "${cache_dir}/${codename}" ${mirror}
-        _msg_info "${codename} installed successfully!"
-    else
+    local debootstrap_status
+    statusfile="${cache_dir}/${codename}/status"
+
+    debootstrap_status() {
+        if [[ ! -d "$(dirname ${statusfile})" ]]; then
+            mkdir -p "$(dirname ${statusfile})"
+        fi
+        echo "${1}" > "${statusfile}"
+    }
+
+    if [[ -f "${statusfile}" ]] && [[ $(cat "${statusfile}" 2> /dev/null) = "Done" ]]; then
         _msg_info "${codename} cache is found."
+    else
+        remove "${cache_dir}/${codename}"
+        debootstrap_status "Running"
+        _msg_info "Installing Ubuntu to '${cache_dir}/${codename}/airootfs'..."
+        mkdir -p "${cache_dir}/${codename}/airootfs"
+        debootstrap --arch=${arch} --include=linux-image-generic  --verbose --merged-usr "${codename}" "${cache_dir}/${codename}/airootfs" ${mirror}
+        _msg_info "${codename} installed successfully!"
+        debootstrap_status "Done"
     fi
     
     rm -rf "${work_dir}/airootfs" && mkdir -p "${work_dir}/airootfs"
-    _msg_info "copy base files from '${cache_dir}/${codename}' to '${work_dir}/airootfs'..."
-    rsync  -au "${cache_dir}/${codename}/" "${work_dir}/airootfs"
+    _msg_info "copy base files from '${cache_dir}/${codename}/airootfs' to '${work_dir}/airootfs'..."
+    rsync  -au "${cache_dir}/${codename}/airootfs/" "${work_dir}/airootfs"
     echo 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${PATH}' >> "${work_dir}/airootfs/etc/bash.bashrc"
     run_cmd apt-get update
     # run_cmd apt-get upgrade
