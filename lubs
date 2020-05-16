@@ -28,6 +28,7 @@ iso_filename="${iso_name}-${iso_version}-${arch}.iso"
 channel_name="serene"
 
 debug=false
+cache_only=false
 
 
 # Show an INFO message
@@ -180,6 +181,9 @@ make_basefs() {
         debootstrap --arch=${arch} --include=linux-image-generic  --verbose --merged-usr "${codename}" "${cache_dir}/${codename}/airootfs" ${mirror}
         _msg_info "${codename} installed successfully!"
         debootstrap_status "Done"
+    fi
+    if [[ "${cache_only}" = true ]]; then
+        exit 0
     fi
     
     rm -rf "${work_dir}/airootfs" && mkdir -p "${work_dir}/airootfs"
@@ -415,7 +419,7 @@ make_checksum() {
 # 参考記事：https://0e0.pw/ci83 https://0e0.pw/VJlg
 
 _opt_short="w:o:ha:-:m:c:d"
-_opt_long="help,arch:,codename:,debug,help,mirror:,out:,work"
+_opt_long="help,arch:,codename:,debug,help,mirror:,out:,work,cache-only"
 OPT=$(getopt -o ${_opt_short} -l ${_opt_long} -- "${@}")
 if [[ ${?} != 0 ]]; then
     exit 1
@@ -461,9 +465,8 @@ while :; do
         -o | --out)
             if [[ -z ${2} ]]; then
                 _msg_error "Please specify the out dir."
-                exit 1
-            else
-                out_dir="${2}"
+                exit 1Do not use cache if interrupted on the way
+Change cache structure
             fi
             shift 2
             ;;
@@ -475,6 +478,10 @@ while :; do
                 work_dir="${2}"
             fi
             shift 2
+            ;;
+        --cache-only)
+            cache_only=true
+            shift 1
             ;;
         --)
             shift
