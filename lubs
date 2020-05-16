@@ -135,6 +135,29 @@ _usage () {
     echo "    -d | --debug           "
     echo "    -h | --help            This help message and exit"
     echo
+    echo "You can switch between installed packages, files included in images, etc. by channel."
+    echo
+    echo " Channel:"
+    local _channel
+    local channel_list
+    local description
+    for _channel in $(ls -l "${channels_dir}" | awk '$1 ~ /d/ {print $9 }'); do
+        if [[ -n $(ls "${channels_dir}/${_channel}") ]] && [[ ! "${_channel}" = "share" ]]; then
+            channel_list="${channel_list[@]} ${_channel}"
+        fi
+    done
+    for _channel in ${channel_list[@]}; do
+        if [[ -f "${channels_dir}/${_channel}/description.txt" ]]; then
+            description=$(cat "${channels_dir}/${_channel}/description.txt")
+        else
+            description="This channel does not have a description.txt."
+        fi
+        echo -ne "    ${_channel}"
+        for i in $( seq 1 $(( 23 - ${#_channel} )) ); do
+            echo -ne " "
+        done
+        echo -ne "${description}\n"
+    done
 }
 
 
