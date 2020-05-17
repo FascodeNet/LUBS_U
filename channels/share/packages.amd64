@@ -151,6 +151,7 @@ xserver-xorg-video-qxl
 xubuntu-icon-theme
 numix-blue-gtk-theme
 tango-icon-theme
+pop-icon-theme
 
 #[ plymouth ]
 plymouth-label
