@@ -69,6 +69,7 @@ syslinux-common
 time
 unzip
 usbmuxd
+htop
 
 #[ text ]
 aspell-en
