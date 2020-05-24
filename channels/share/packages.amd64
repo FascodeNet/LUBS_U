@@ -110,8 +110,8 @@ telnet
 wireless-tools
 
 #[ web ]
-chromium-browser-l10n
-chromium-codecs-ffmpeg-extra
+#chromium-browser-l10n
+#chromium-codecs-ffmpeg-extra
 curl
 
 #[ interpreters ]
