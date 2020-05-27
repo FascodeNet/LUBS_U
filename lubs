@@ -566,6 +566,34 @@ done
 
 bootfiles_dir="${work_dir}/bootfiles"
 
+if [[ -n "${1}" ]]; then
+    channel_name="${1}"
+
+    check_channel() {
+        local channel_list
+        local i
+        channel_list=()
+        for _channel in $(ls -l "${channels_dir}" | awk '$1 ~ /d/ {print $9 }'); do
+            if [[ -n $(ls "${channels_dir}/${_channel}") ]] && [[ ! "${_channel}" = "share" ]]; then
+                channel_list="${channel_list[@]} ${_channel}"
+            fi
+        done
+        for i in ${channel_list[@]}; do
+            if [[ "${i}" = "${channel_name}" ]]; then
+                echo -n "true"
+                return 0
+            fi
+        done
+        echo -n "false"
+        return 1
+    }
+
+    if [[ $(check_channel ${channel_name}) = false ]]; then
+        _msg_error "Invalid channel ${channel_name}"
+        exit 1
+    fi
+fi
+
 
 prepare_build
 run_once make_basefs
