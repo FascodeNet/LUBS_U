@@ -600,7 +600,7 @@ run_once make_basefs
 run_once make_sourcelist
 run_once make_systemd
 run_once make_apt_packages
-run_once make_snap_packages
+#run_once make_snap_packages
 run_once make_config
 run_once make_customize_airootfs
 run_once make_clean
