@@ -256,18 +256,18 @@ make_sourcelist() {
         _apt_install gnupg
 
         for repo in $(find ${channels_dir}/*/repo -name *.list); do
-            key="$(dirname $repo)/$(basename $repo | sed "s/list/key/")"
+            key="$(dirname ${repo})/$(basename ${repo} | sed "s/list/key/")"
             
-            if [[ -f "$key" ]]; then
-                if $(file $key | grep -q "PGP/GPG key"); then
-                    cp $key ${work_dir}/airootfs/$(basename $key)
+            if [[ -f "${key}" ]]; then
+                if $(file ${key} | grep -q "PGP/GPG key"); then
+                    cp ${key} ${work_dir}/airootfs/$(basename ${key})
                 else
-                    wget -q -O ${work_dir}/airootfs/$(basename $key) $(cat $key)
+                    wget -q -O ${work_dir}/airootfs/$(basename ${key}) $(cat ${key})
                 fi
 
-                run_cmd apt-key add $(basename $key)
-                rm ${work_dir}/airootfs/$(basename $key)
-                cp $repo ${work_dir}/airootfs/etc/apt/sources.list.d
+                run_cmd apt-key add $(basename ${key})
+                rm ${work_dir}/airootfs/$(basename ${key})
+                cp ${repo} ${work_dir}/airootfs/etc/apt/sources.list.d
             fi
         done
 
