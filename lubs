@@ -28,6 +28,7 @@ iso_filename="${iso_name}-${iso_version}-${arch}.iso"
 channel_name="serene"
 
 debug=false
+fast=false
 cache_only=false
 
 
@@ -306,6 +307,12 @@ make_apt_packages() {
         grep -h -v ^'#' "${channels_dir}/${channel_name}/packages.${arch}" | grep -v "^$" >> "${work_dir}/airootfs/aptpkglist"
     fi
     if [[ -n "$(echo $(<"${work_dir}/airootfs/aptpkglist"))" ]]; then
+        if [[ "${fast}" = true ]]; then
+            cp "${script_path}/get_apt.py" "${work_dir}/airootfs"
+            _apt_install python3-apt aria2
+            run_cmd env -i bash -c './get_apt.py $(echo $(<aptpkglist))'
+        fi
+
         run_cmd env -i bash -c 'DEBIAN_FRONTEND=noninteractive apt-get --no-install-recommends --yes install $(echo $(<aptpkglist))'
     fi
     remove "${work_dir}/airootfs/aptpkglist"
@@ -371,6 +378,7 @@ make_customize_airootfs() {
 make_clean() {
     run_cmd apt-get clean
     run_cmd apt-get --yes autoremove
+    [[ "${fast}" = true ]] && run_cmd apt-get purge --autoremove -y aria2 && run_cmd rm -f ./get_apt.py
     run_cmd rm -rf "/tmp/* ~/.bash_history"
 }
 
@@ -489,8 +497,8 @@ make_checksum() {
 # 引数解析（）
 # 参考記事：https://0e0.pw/ci83 https://0e0.pw/VJlg
 
-_opt_short="w:o:ha:-:m:c:d"
-_opt_long="help,arch:,codename:,debug,help,mirror:,out:,work,cache-only"
+_opt_short="w:fo:ha:-:m:c:d"
+_opt_long="help,arch:,codename:,debug,help,mirror:,out:,work:,cache-only,fast"
 OPT=$(getopt -o ${_opt_short} -l ${_opt_long} -- "${@}")
 if [[ ${?} != 0 ]]; then
     exit 1
@@ -518,6 +526,10 @@ while :; do
             ;;
         -d | --debug)
             debug=true
+            shift 1
+            ;;
+        -f | --fast)
+            fast=true
             shift 1
             ;;
         -h | --help)
