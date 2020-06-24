@@ -82,8 +82,8 @@ _msg_error() {
 # Unmount chroot dir
 umount_chroot () {
     local mount
-    for mount in $(mount | awk '{print $3}' | grep $(realpath ${work_dir})); do
-        _msg_info "Unmounting ${mount}"
+    for mount in $(mount | awk '{print $3}' | grep $(realpath ${work_dir}) | sort -r); do
+        [[ "${1}" == debug ]] && _msg_debug "Unmounting ${mount}" || _msg_info "Unmounting ${mount}"
         umount -fl "${mount}"
     done
 }
@@ -114,7 +114,13 @@ run_once() {
 }
 
 run_cmd() {
-    arch-chroot "${work_dir}/airootfs" "${@}"
+    for mount in "dev" "dev/pts" "proc" "sys" "run/systemd/resolve/stub-resolv.conf"; do
+        _msg_debug "Mounting  ${work_dir}/airootfs/${mount}"
+        [[ "${mount}" == "run/systemd/resolve/stub-resolv.conf" ]] && mount --bind /etc/resolv.conf "${work_dir}/airootfs/${mount}" || mount --bind /${mount} "${work_dir}/airootfs/${mount}"
+    done
+
+    chroot "${work_dir}/airootfs" "${@}"
+    umount_chroot debug
 }
 
 run_bootfiles() {
@@ -200,11 +206,7 @@ prepare_build() {
     [[ ! -d "${work_dir}" ]] && mkdir -p "${work_dir}"
     [[ ! -d "${out_dir}" ]] && mkdir -p "${out_dir}"
 
-    local mount
-    for mount in $(mount | awk '{print $3}' | grep $(realpath ${work_dir}) | sort -r); do
-        _msg_info "Unmounting ${mount}"
-        umount "${mount}"
-    done
+    umount_chroot 
 
     # Check codename
     if [[ -z $(grep -h -v ^'#' ${channels_dir}/${channel_name}/codename.${arch} | grep -x ${codename}) ]]; then
@@ -375,7 +377,7 @@ make_clean() {
 }
 
 make_bootfiles() {
-    run_cmd update-initramfs -c -k all
+    run_cmd env -i bash -c 'update-initramfs -c -k all'
     _apt_install memtest86+
     [[ -d "${bootfiles_dir}" ]] && rm -r "${bootfiles_dir}"
     mkdir -p ${bootfiles_dir}/{casper,isolinux,install}
@@ -440,6 +442,7 @@ make_isolinux() {
         --modules="linux16 linux normal iso9660 biosdisk search" \
         --locales="" \
         --fonts="" \
+        --themes="" \
         "boot/grub/grub.cfg=isolinux/grub.cfg"
     cat /usr/lib/grub/i386-pc/cdboot.img isolinux/core.img > isolinux/bios.img
 }
@@ -565,6 +568,7 @@ while :; do
 done
 
 bootfiles_dir="${work_dir}/bootfiles"
+trap  umount_chroot 0 2 15
 
 if [[ -n "${1}" ]]; then
     channel_name="${1}"
