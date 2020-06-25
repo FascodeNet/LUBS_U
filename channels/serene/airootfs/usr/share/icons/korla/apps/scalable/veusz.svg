@@ -1,0 +1,15 @@
+<svg clip-rule="evenodd" fill-rule="evenodd" stroke-linejoin="round" stroke-miterlimit="2" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <linearGradient id="a" x2="1" gradientTransform="matrix(0 -43.3373 43.3373 0 302.963 45.6687)" gradientUnits="userSpaceOnUse">
+  <stop stop-color="#c0cdd2" offset="0"/>
+  <stop stop-color="#dfdfdf" offset="1"/>
+ </linearGradient>
+ <clipPath id="b">
+  <path d="m.46-.212-.102-.489-.217.001.155.7h.243l.543-.7h-.211z" clip-rule="nonzero"/>
+ </clipPath>
+ <path d="m45.668 8.56c0-3.438-2.79-6.228-6.228-6.228h-30.88c-3.438 0-6.228 2.79-6.228 6.228v30.88c0 3.438 2.79 6.228 6.228 6.228h30.88c3.438 0 6.228-2.79 6.228-6.228z" fill="url(#a)"/>
+ <path transform="translate(-1.51322 -.011787)" d="m18.919 6.519h1v33.986h20.963v1h-21.963z" fill="#808080"/>
+ <g transform="matrix(36.9519 0 0 49.9546 1.48108 41.4723)" clip-path="url(#b)">
+  <image transform="matrix(.026881181 0 0 .019489259 .14150138 -.70120059)" width="34.766" height="35.049" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACMAAAAkCAYAAAAD3IPhAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAA8klEQVRYhc2WwQ7CMAxDMyntjQ/mx+GExgUYapsqbexuPm4QvcVu0k1u911K1U+WSCUl3y9pgEdhP0xVA0+nkhRedFbznSHoBBjbXpXsDTD/iM1nhsCGtSkISM7MGF0HZv0Yvtic8Z6mlsDNAwc4RveBIeVjsOzFMnP6bkJcIYpCCKnkF67avoX+rpKeIBJLfkCV/Gi/CX6lLbuuvzM0OJEvYNAmLCA4M9EA/zJDsmHg9Hc6w8xIWyp5wCbaFQcRYPwVwpgz05q397CJbIFHnc4QA2wM0MHMcFfE2GkqBV4R+K0dAPzLzPohV6pvE3VT13oDTI0yckwy3OIAAAAASUVORK5CYII="/>
+ </g>
+ <path transform="translate(-1.51322 -.011787)" d="m32.967 34.854.381 1.336 1.347-.338-.965.997.965.998-1.347-.338-.381 1.336-.381-1.336-1.346.338.965-.998-.965-.997 1.346.338zm3.931-4.466.29 1.016 1.025-.257-.735.76.735.759-1.025-.257-.29 1.016-.29-1.016-1.025.257.735-.759-.735-.76 1.025.257zm-2.859-4.456.426 1.491 1.504-.377-1.079 1.114 1.079 1.114-1.504-.377-.426 1.491-.425-1.491-1.504.377 1.078-1.114-1.078-1.114 1.504.377zm-8.526-12.641.303 1.061 1.071-.268-.768.793.768.793-1.071-.268-.303 1.061-.303-1.061-1.07.268.767-.793-.767-.793 1.07.268z" fill="#808080"/>
+</svg>
