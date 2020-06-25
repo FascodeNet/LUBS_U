@@ -139,7 +139,8 @@ notify-osd-icons
 xarchiver
 xbitmaps
 xfonts-scalable
-xscreensaver
+#xscreensaver
+xfce4-screensaver
 xserver-xorg-input-evdev
 xserver-xorg-input-synaptics
 xserver-xorg-input-wacom
@@ -149,11 +150,11 @@ xserver-xorg-video-intel
 xserver-xorg-video-qxl
 
 #[ icon and theme ]
-xubuntu-icon-theme
+#xubuntu-icon-theme
 numix-blue-gtk-theme
-tango-icon-theme
+#tango-icon-theme
 #pop-icon-theme
-papirus-icon-theme
+#papirus-icon-theme
 
 #[ plymouth ]
 plymouth-label
