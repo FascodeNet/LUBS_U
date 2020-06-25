@@ -24,6 +24,7 @@ synaptic
 syslinux-utils
 unattended-upgrades
 xfsprogs
+bash-completion
 
 #[ installer ]
 ubiquity-frontend-debconf
