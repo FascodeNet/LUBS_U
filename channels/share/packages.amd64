@@ -164,7 +164,8 @@ plymouth-theme-ubuntu-text
 plymouth-x11
 
 #[ display manager ]
-slick-greeter
+#slick-greeter
+lightdm-webkit-greeter
 
 #[ python ]
 dh-python
