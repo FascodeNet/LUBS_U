@@ -141,7 +141,8 @@ xarchiver
 xbitmaps
 xfonts-scalable
 #xscreensaver
-xfce4-screensaver
+#xfce4-screensaver
+light-locker
 xserver-xorg-input-evdev
 xserver-xorg-input-synaptics
 xserver-xorg-input-wacom
