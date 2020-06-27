@@ -165,7 +165,8 @@ plymouth-x11
 
 #[ display manager ]
 #slick-greeter
-lightdm-webkit-greeter
+lightdm-webkit2-greeter
+python3-whither
 
 #[ python ]
 dh-python
