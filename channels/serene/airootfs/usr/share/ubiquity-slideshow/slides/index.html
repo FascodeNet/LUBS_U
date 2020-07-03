@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+	<title>ubiquity-slideshow-basix</title>
+	
+	<link href="link/base.css" rel="stylesheet" type="text/css" />
+	
+	<base target="_blank" />
+	
+	<script type="text/javascript" src="link-core/jquery.js"></script>
+	<script type="text/javascript" src="link-core/jquery.cycle.all.js"></script>
+	
+	<script type="text/javascript" src="link-core/base.js"></script>
+	
+	<script type="text/javascript">
+		SLIDESHOW_OPTIONS = {
+			timeout:50000,
+			speed:600,
+		}
+	</script>
+	
+	<script type="text/javascript" src="link-core/slideshow.js"></script>
+</head>
+
+<body>
+
+<div id="slideshow">
+	<div><a href="00_welcome.html" class="load"></a></div>
+	<div><a href="01_lxde.html" class="load"></a></div>
+	<div><a href="02_browser.html" class="load"></a></div>
+	<div><a href="03_office.html" class="load"></a></div>
+	<div><a href="04_media.html" class="load"></a></div>
+	<div><a href="05_social.html" class="load"></a></div>
+	<div><a href="06_lsc.html" class="load"></a></div>
+	<div><a href="07_help.html" class="load"></a></div>
+	<div><a href="08_thanks.html" class="load"></a></div>
+</div>
+
+<div id="controls">
+	<a class="control-arrow" id="prev-slide" style="display:none;"></a>
+	<a class="control-arrow" id="next-slide"></a>
+	<input type="hidden" id="current-slide" />
+</div>
+
+</body>
+
+</html>
