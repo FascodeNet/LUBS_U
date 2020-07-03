@@ -1,0 +1,6 @@
+[theme]
+name=serene
+description=Serene Lightdm theme
+engine=lightdm-webkit-greeter
+url=index.html
+session=xfce

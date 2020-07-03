@@ -1,0 +1,271 @@
+<!doctype html>
+<html>
+
+<head>
+    <title>login</title>
+    <meta charset='utf-8'/>
+    <link rel="stylesheet" href="css/ress.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <div id="wrapper" class="inactive">
+        <div id="users">
+            <div class="user" id="main-user">
+                <div class="user-lists">
+                <div class="avatar"></div>
+                </div>
+                <div class="user-mains">
+                <h1>name</h1>
+                <input class="password" type="password" placeholder="Password" />
+                <p class="warn" style="display:none;">try again?</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="alt-users" class="hidden"></div>
+    <div id="actions">
+        <span id="poweroff" title="poweroff"><img src="img/system-shutdown.svg" alt=""></span>
+        <span id="reboot" title="reboot"><img src="img/reboot.svg" alt=""></span>
+        <span id="suspend" title="suspend"><img src="img/system-suspend.svg" alt=""></span>
+        <span id="hibernate" title="hibernate"><img src="img/system-suspend-hibernate.svg" alt=""></span>
+    </div>
+    <ul id="session-bar">
+        <select class="container" onchange="window.login.changeSession(this.value);"></select>
+    </ul>
+    <div id="time">
+        <h1 id="time-text">00:00:00</h1>
+        <h2 id="date-text">monday, jan 1</h2>
+    </div>
+    <script>
+
+function $(c) { return document.querySelector(c); }
+
+function pad0(n) { return n >= 10 ? n.toString() : "0" + n; }
+
+Date.prototype.getDayOfWeek = function() {
+    return ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][ this.getDay() ];
+};
+
+Date.prototype.getMonthName = function() {
+    return ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ][this.getMonth()];
+};
+
+class Login {
+
+    constructor() {
+        this.defaultUser = null;
+        this.otherUsers = [];
+        this.password = "";
+
+        // this.bindInactive();
+        this.bindEvents();
+        this.setupSessions();
+        this.setupUsers();
+    }
+
+
+
+    // // events
+    // bindInactive() {
+    //     let interval = 1;
+    //     setInterval(() => {
+    //         if(interval === 4) {
+    //             $("#wrapper").className = "inactive";
+    //             interval = 1;
+    //             return;
+    //         }
+    //         interval++;
+    //     }, 1000);
+    //     document.body.onmousemove = document.body.onkeypress = () => {
+    //         $("#wrapper").className = "active";
+    //         interval = 1;
+    //     };
+    // }
+
+    bindEvents() {
+        $("#main-user .avatar").onclick = () => {
+            if($("#alt-users").className === "shown") {
+                $("#alt-users").className = "hidden";
+            } else {
+                $("#alt-users").className = "shown";
+            }
+        };
+
+        $("#main-user .password").onkeydown = e => {
+            if(e.keyCode == 13) {
+                if(!lightdm._username)
+                    lightdm.start_authentication(this.defaultUser.name);
+                this.password = $("#main-user .password").value;
+            } else {
+                $("#main-user .warn").style.display="none";
+            }
+        };
+
+
+        // actions
+        $("#poweroff").onclick = () => lightdm.shutdown();
+        $("#reboot").onclick = () => lightdm.restart();
+        $("#suspend").onclick = () => lightdm.suspend();
+        $("#hibernate").onclick = () => lightdm.hibernate();
+
+        if(!lightdm.can_shutdown)  $("#poweroff").style.display="none";
+        if(!lightdm.can_restart)   $("#reboot").style.display="none";
+        if(!lightdm.can_suspend)   $("#suspend").style.display="none";
+        if(!lightdm.can_hibernate) $("#hibernate").style.display="none";
+        if(!lightdm.can_shutdown && !lightdm.can_restart &&
+           !lightdm.can_suspend && !lightdm.can_hibernate) {
+           // is this even necessary?
+           $("#actions").style.display="none";
+        }
+    }
+
+    // users
+    setupUsers() {
+        
+        this.updateDefault(-1);
+
+    }
+
+    updateDefault(idx) {
+
+        if(lightdm._username){
+            lightdm.cancel_authentication();
+        }
+        lightdm.cancel_timed_login();
+
+        $("#alt-users").className = "hidden";
+        
+        if(idx === -1){
+            if(lightdm.select_user_hint){
+                this.defaultUser = lightdm.users.find(user => user.username === lightdm.select_user_hint);
+
+            } else {
+                this.defaultUser = lightdm.users[0];
+            }
+        } else {
+            localStorage.setItem("nameId",idx)
+            this.defaultUser = this.otherUsers[idx];
+        } 
+        //         // this.defaultUser = this.otherUsers[idx];
+        // console.log(localStorage.getItem("nameId"));
+        // console.log(idx);
+        // console.log(lightdm.select_user_hint);
+        // console.log(this.defaultUser);
+        // console.log(lightdm.users.find(user => user.username === lightdm.select_user_hint));
+        // console.log(lightdm.users[-1]);
+        // console.log(lightdm.users[0]);
+        // console.log(lightdm.users[1]);
+        // console.log(lightdm.users[2]);
+        // console.log(this.otherUsers[idx]);
+        
+
+    
+
+        // HACK: lightdm produces duplicate users for some reason
+        const userHash = {};
+        this.otherUsers = [];
+        for(let user of lightdm.users) {
+            if( user.username !== this.defaultUser.username &&
+                !userHash.hasOwnProperty(user.username) ) {
+                this.otherUsers.push(user);
+                userHash[user.username] = true;
+            }
+        }
+        lightdm.start_authentication(this.defaultUser.username);
+
+        // main user
+        $("#main-user h1").textContent = this.defaultUser.display_name;
+        $("#main-user .avatar").style.backgroundImage = "url(\""+(this.defaultUser.image|| "img/icon.png")+"\")";
+        $(".password").value="";
+        $(".password").focus();
+        $("#main-user .warn").style.display = "none";
+
+        // others
+        let html = "";
+        for(let i = 0; i < this.otherUsers.length; i++) {
+            const user = this.otherUsers[i];
+                    
+                html += `
+                <div class="user" onClick="window.login.updateDefault(${i});">
+                    <div class="user-lists">
+                        <div class="avatar" style="background-image:url('${user.image || "img/icon.png"}');"></div>
+                    </div>
+                    <div class="user-mains">
+                        <h1>${user.display_name}</h1>
+                    </div>
+                </div>
+                `;
+                
+            
+        }
+        $("#alt-users").innerHTML = html;
+
+    }
+
+    // sessions
+    setupSessions() {
+        let html = "";
+        for(let i = 0; i < lightdm.sessions.length; i++) {
+            const session = lightdm.sessions[i];
+            if(localStorage.getItem("sessionId")==i){
+                html+=`<option class="active" selected data-idx="${i}" value="${i}">${session.name}</option>`;
+            }else{
+                html+=`<option data-idx="${i}" value="${i}">${session.name}</option>`;
+            }
+        }
+        $("#session-bar .container").innerHTML = html;
+        if(localStorage.getItem("sessionId")==null){
+            $("#session-bar .container option:first-child").classList.add("active");
+            $("#session-bar .container option:first-child").selected = true;
+        }
+    }
+
+    changeSession(idx) {
+        localStorage.setItem("sessionId", idx);
+        console.log(localStorage.getItem("sessionId"));
+        $("#session-bar .container option.active").classList.remove("active");
+        $(`#session-bar .container option[data-idx="${idx}"]`).classList.add("active");
+    }
+}
+
+function authentication_complete() {
+	console.log("complete?");
+    if (lightdm.is_authenticated)
+        lightdm.login(lightdm.authentication_user, lightdm.sessions[parseInt($("#session-bar .active").dataset.idx)].key);
+    else if(window.login.password) {
+        $("#main-user .warn").style.display = "block";
+        $("#main-user .warn").textContent="try again?";
+    }
+}
+
+function show_message(msg) {
+    $("#main-user .warn").textContent = err;
+    $("#main-user .warn").style.display = "block";
+}
+
+function show_error() {
+    console.log("error");
+}
+
+function show_prompt(text, type) {
+    if(text === "Password: ") {
+        lightdm.respond(window.login.password);
+    }
+}
+
+__lightdm.then(result => {
+    window.lightdm = result;
+    window.login = new Login();
+    setInterval(function (){
+        const d = new Date();
+        $("#time-text").textContent = `${pad0(d.getHours())}:${pad0(d.getMinutes())}:${pad0(d.getSeconds())}`;
+        $("#date-text").textContent = `${d.getDayOfWeek()}, ${d.getMonthName()} ${d.getDate()}`.toLowerCase();
+
+    }, 1000);
+});
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,151 @@
+body{
+    background: url("../img/serene-wallpaper-1.png") center center no-repeat;
+    background-size: cover;
+    height: 100vh;
+}
+body::before{
+    content: "";
+    display: block;
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    z-index: -1;
+    background-color: rgba(0, 0, 0, 0.3);
+}
+#wrapper{
+    box-sizing: border-box;
+    padding: 10px 0;
+    width: 300px;
+    background-color: rgba(255, 255, 255, 1);
+    box-shadow: -3px 3px 8px rgba(0, 0, 0, 0.9);
+    border-radius: .5rem;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    -webkit-transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    position: fixed;
+}
+#main-user{
+    text-align: center;
+}
+#main-user .user-lists{
+}
+#main-user .avatar{
+    display: inline-block;
+    width: 92px;
+    height: 92px;
+    margin: 20px 10px 20px;
+    border-radius: 50rem;
+    border: 3px #aaa solid;
+}
+#main-user h1{
+    font-size: 18px;
+    padding: 10px 0;
+    color: #aaa;
+}
+#main-user .password{
+    font-size: 18px;
+    padding: 15px 0 15px;
+    width: 100%;
+    text-align: center;
+    outline: none;
+}
+#main-user .password::placeholder{
+    color: #aaa;
+}
+#alt-users{
+    color: #fff;
+    left: 0;
+    bottom: 0;
+    position: fixed;
+    z-index: 5;
+}
+#alt-users .user{
+    cursor: pointer;
+    display: block;
+    height: 40px;
+    margin: 5px;
+    border-radius: .5rem;
+    background-color: rgba(0, 0, 0, .5);
+}
+#alt-users .user:hover{
+    background-color: rgba(0, 0, 0, .7);
+}
+#alt-users .user .user-lists{
+    display: inline-block;
+    vertical-align: top;
+    width: 30px;
+    height: 30px;
+    margin: 5px;
+}
+#alt-users .user .user-lists .avatar{
+    width: 30px;
+    height: 30px;
+    border-radius: 50rem;
+    border: 1px #aaa solid;
+}
+#alt-users .user .user-mains{
+    display: inline-block;
+    vertical-align: top;
+    height: 30px;
+    margin: 5px 5px 5px 0;
+}
+#alt-users .user .user-mains h1{
+    font-size: 18px;
+    font-weight: 100px;
+    line-height: 30px;
+    vertical-align: middle;
+}
+#time{
+    top:0;
+    right: 0;
+    position: fixed;
+    font-size: 0;
+}
+#time h1,
+#time h2{
+    box-sizing: border-box;
+    height: 26px;
+    line-height: 26px;
+    font-size: 18px;
+    font-weight: 100;
+    margin: 0 5px 0 0;
+    display: inline-block;
+    color: #fff;
+    
+}
+#session-bar{
+    top:0;
+    left: 0;
+    position: fixed;
+    font-size: 0;
+}
+#session-bar:hover{
+    background-color: #333;
+}
+#session-bar .container{
+    box-sizing: border-box;
+    height: 26px;
+    line-height: 26px;
+    font-size: 18px;
+    font-weight: 100;
+    margin: 0 0 0 5px;
+    display: inline-block;
+    color: #fff;
+}
+#actions{
+    background-color: #666;
+    font-size: 0;
+    text-align: center;
+}
+#actions span{
+}
+#actions img{
+    width: 26px;
+    padding: 2px;
+    cursor: pointer;
+}
+#actions img:hover{
+    background-color: #333;
+}
