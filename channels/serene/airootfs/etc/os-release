@@ -1,0 +1,12 @@
+NAME="SereneLinux"
+VERSION="20.04 LTS (Focal Fossa)"
+ID=ubuntu
+ID_LIKE=debian
+PRETTY_NAME="SereneLinux"
+VERSION_ID="20.04"
+HOME_URL="https://0e0.pw/uiIJ"
+SUPPORT_URL="https://0e0.pw/cLS6"
+BUG_REPORT_URL="https://0e0.pw/D4RQ"
+PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
+VERSION_CODENAME=focal
+UBUNTU_CODENAME=focal
