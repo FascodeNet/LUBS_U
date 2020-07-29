@@ -1,260 +1,114 @@
-#[ admin ]
-acpi-support
-aptdaemon-data
-apturl
-bluez-obexd
-btrfs-progs
-bubblewrap
-command-not-found
-dbus-user-session
-discover
-dmraid
-gdebi-core
-gdisk
-gufw
-hdparm
-isolinux
-language-selector-gnome
-lvm2
-media-player-info
-mobile-broadband-provider-info
-mokutil
-rtkit
-synaptic
-syslinux-utils
-unattended-upgrades
-xfsprogs
-bash-completion
-
-#[ installer ]
-ubiquity-frontend-debconf
-ubiquity-frontend-gtk
-ubiquity-ubuntu-artwork
-ubiquity-slideshow-xubuntu
-
-#[ gnome ]
-apport-gtk
-baobab
-cheese-common
-cups-pk-helper
-gnome-software-plugin-snap
-gnome-startup-applications
-gnome-system-monitor
-gnome-themes-extra
-gparted
-indicator-application
-lightdm-settings
-seahorse
-simple-scan
-system-tools-backends
-yelp
-zenity
-
-#[ utils ]
-apport-symptoms
-dconf-editor
-dmidecode
-fakeroot
-fontconfig
-irqbalance
-jq
-lshw
-ltrace
-mlocate
+#
+#   Base
+#
+#-- archives --#
+binutils
+bzip2
+cpio
+gzip
+p7zip
 p7zip-full
-powermgmt-base
-rng-tools
-strace
-syslinux
-syslinux-common
-time
+tar
 unzip
-usbmuxd
-htop
+xz-utils
+zip
 
-#[ text ]
-aspell-en
-enchant
-gsfonts
-qpdf
-wamerican
-wbritish
-wdiff
+#-- base --#
+ubuntu-minimal
+ubuntu-standard
 
-#[ misc ]
-at-spi2-core
-dns-root-data
-installation-report
-lupin-casper
-p11-kit-modules
-poppler-data
-session-migration
+#-- commandline tools --#
+bash-completion
+dialog
 
-#[ net ]
-avahi-utils
-cups-browsed
-dnsutils
-ftp
-geoip-database
-iputils-arping
-iputils-tracepath
-modemmanager
-mtr-tiny
-net-tools
-network-manager-gnome
-publicsuffix
-resolvconf
-rsync
-samba-common-bin
-tcpdump
-telnet
-wireless-tools
-
-#[ web ]
-#chromium-browser-l10n
-#chromium-codecs-ffmpeg-extra
-curl
-
-#[ interpreters ]
-cpp-7
+#-- devel --#
+build-essential
 default-jre
 
-#[ libs ]
-discover-data
-e2fslibs
-gconf2
-gnome-keyring-pkcs11
-gvfs-backends
-kactivities-bin
-kinit
-kpackagelauncherqml
-kwayland-data
-packagekit-tools
-qt5-gtk-platformtheme
-
-#[ x11 ]
-desktop-base
-greybird-gtk-theme
-notify-osd
-notify-osd-icons
-xarchiver
-xbitmaps
-xfonts-scalable
-#xscreensaver
-#xfce4-screensaver
-light-locker
-xserver-xorg-input-evdev
-xserver-xorg-input-synaptics
-xserver-xorg-input-wacom
-xserver-xorg-legacy
-xserver-xorg-video-all
-xserver-xorg-video-intel
-xserver-xorg-video-qxl
-
-#[ icon and theme ]
-#xubuntu-icon-theme
-numix-blue-gtk-theme
-#tango-icon-theme
-#pop-icon-theme
-#papirus-icon-theme
-
-#[ plymouth ]
-plymouth-label
-plymouth-theme-ubuntu-text
-plymouth-x11
-
-#[ display manager ]
-#slick-greeter
-lightdm-webkit2-greeter
-python3-whither
-
-#[ python ]
-dh-python
-mugshot
-system-config-printer-udev
-
-#[ otherosfs ]
-dosfstools
-
-#[ localization ]
-e2fsprogs-l10n
-krb5-locales
-vlc-l10n
-
-#[ editors ]
-ed
+#-- text editor --#
 nano
 vim
 
-#[ fonts ]
-fonts-dejavu-extra
-fonts-droid-fallback
-fonts-noto-cjk-extra
-fonts-noto-mono
-fonts-takao
 
-#[ devel ]
-gdbserver
-lintian
+#
+#   Essntial
+#
+#-- grub --#
+grub-pc
+grub-efi-amd64-bin
+grub-efi-ia32-bin
+os-prober
 
-#[ graphics ]
-gimp
-imagemagick-6-common
-jp2a
-netpbm
-printer-driver-gutenprint
-sane-utils
-viewnior
+#-- linux --#
+linux-firmware
+linux-generic
 
-#[ vcs ]
-git
+#-- live cd--#
+memtest86+
+casper
+lupin-casper
 
-#[ video ]
-va-driver-all
-vdpau-driver-all
-vlc-plugin-notify
-vlc-plugin-samba
-vlc-plugin-skins2
-vlc-plugin-video-splitter
-vlc-plugin-visualization
+#-- ubiquity --#
+ubiquity
+ubiquity-casper
+ubiquity-frontend-debconf
+ubiquity-frontend-gtk
+ubiquity-ubuntu-artwork
 
-#[ doc ]
-info
-manpages-ja
+#-- utility --#
+efibootmgr
+sudo
 
-#[ comm ]
-ippusbxd
 
-#[ kde ]
-kactivitymanagerd
-kdeconnect
-kwayland-integration
-sonnet-plugins
+#
+#   Documents
+#
+#-- man --#
+man-db
+manpages
+manpages-dev
 
-#[ sound ]
-mpg123
-pavucontrol
-phonon4qt5
-pulseaudio
-sound-theme-freedesktop
 
-#[ perl ]
-perl-openssl-defaults
+#
+#   Hard ware
+#
+#-- interface support --#
+usb-modeswitch
+usbutils
 
-#[ xfce ]
-tumbler
-xfce4
-xfce4-notifyd
-xfce4-screenshooter
-xfce4-terminal
-xfce4-power-manager-plugins
-xfce4-volumed
-xfce4-whiskermenu-plugin
-xfpanel-switch
-xorg
-orage
-thunar-archive-plugin
-thunar-volman
+#-- printers --#
+cups
 
-#[ metapackages ]
-ubuntu-restricted-addons
+#-- file system --#
+btrfs-progs
+dosfstools
+mtools
+ntfs-3g
+xfsprogs
+
+
+#
+#   Wireless
+#
+#-- connection --#
+isc-dhcp-client
+dnsutils
+network-manager
+ppp
+pptp-linux
+resolvconf
+
+#-- client --#
+openssh-client
+wget
+
+#-- wireless --#
+crda
+wireless-regdb
+wireless-tools
+wpasupplicant
+
+#-- wireless tools --#
+netcat-openbsd
+rsync
+tcpdump
