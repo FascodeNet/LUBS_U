@@ -381,9 +381,9 @@ make_bootfiles() {
     _apt_install memtest86+
     [[ -d "${bootfiles_dir}" ]] && rm -r "${bootfiles_dir}"
     mkdir -p ${bootfiles_dir}/{casper,isolinux,install}
-    cp ${work_dir}/airootfs/boot/vmlinuz-*-*-generic ${bootfiles_dir}/casper/vmlinuz
-    cp ${work_dir}/airootfs/boot/initrd.img-*-*-generic ${bootfiles_dir}/casper/initrd
-    cp ${work_dir}/airootfs/boot/memtest86+.bin ${bootfiles_dir}/install/memtest86+
+    cp "${work_dir}/airootfs/boot/vmlinuz" "${bootfiles_dir}/casper/vmlinuz"
+    cp "${work_dir}/airootfs/boot/initrd.img" "${bootfiles_dir}/casper/initrd"
+    cp "${work_dir}/airootfs/boot/memtest86+.bin" "${bootfiles_dir}/install/memtest86+"
 
     if [[ ! -f "${cache_dir}/memtest86-usb.zip" ]]; then
         wget -O ${cache_dir}/memtest86-usb.zip https://www.memtest86.com/downloads/memtest86-usb.zip
