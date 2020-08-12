@@ -26,6 +26,7 @@ iso_version="${codename}-$(date +%Y.%m.%d)"
 iso_filename="${iso_name}-${iso_version}-${arch}.iso"
 
 channel_name="serene"
+username="liveuser"
 
 debug=false
 cache_only=false
@@ -352,22 +353,27 @@ make_customize_airootfs() {
     local copy_airootfs
 
     copy_airootfs() {
-        local i 
-        for i in "${@}"; do
-            local _dir="${1%/}"
-            if [[ -d "${_dir}" ]]; then
-                cp -af "${_dir}"/* "${work_dir}/airootfs"
-            fi
-        done
+        local _dir="${1%/}"
+        if [[ -d "${_dir}" ]]; then
+            cp -af "${_dir}"/* "${work_dir}/airootfs"
+        fi
     }
 
     copy_airootfs "${channels_dir}/share/airootfs"
     copy_airootfs "${channels_dir}/${channel_name}/airootfs"
 
-    if [[ -f "${work_dir}/airootfs/root/customize_airootfs.sh" ]]; then
-        chmod 755 "${work_dir}/airootfs/root/customize_airootfs.sh"
-        run_cmd "/root/customize_airootfs.sh"
-    fi
+    local run_customize_script
+
+    # run_customize_script <script path from lubs> <script path in chroot>
+    run_customize_script() {
+        if [[ -f "${1}" ]]; then
+            chmod 755 "${1}"
+            run_cmd "${2}"
+        fi
+    }
+
+    run_customize_script "${work_dir}/airootfs/root/customize_airootfs.sh" "/root/customize_airootfs.sh"
+    run_customize_script "${work_dir}/airootfs/root/customize_airootfs_${channel_name}.sh"  "/root/customize_airootfs_${channel_name}.sh"
 }
 
 make_clean() {
