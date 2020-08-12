@@ -26,7 +26,10 @@ iso_version="${codename}-$(date +%Y.%m.%d)"
 iso_filename="${iso_name}-${iso_version}-${arch}.iso"
 
 channel_name="serene"
+
 username="liveuser"
+password="liveuser"
+usershell="/bin/bash"
 
 debug=false
 cache_only=false
@@ -349,29 +352,34 @@ make_config() {
 }
 
 make_customize_airootfs() {
-    # Overwrite airootfs with customize_airootfs.
+    #-- Overwrite airootfs files --#
     local copy_airootfs
-
     copy_airootfs() {
         local _dir="${1%/}"
         if [[ -d "${_dir}" ]]; then
             cp -af "${_dir}"/* "${work_dir}/airootfs"
         fi
     }
-
     copy_airootfs "${channels_dir}/share/airootfs"
     copy_airootfs "${channels_dir}/${channel_name}/airootfs"
 
-    local run_customize_script
+
+    #-- Run scripts --#
+    local _customize_siript_options="-a ${arch} -u '${username}' -p '${password}' -s '${usershell}'"
+    if ${bash_debug}; then
+        _customize_siript_options="$_customize_siript_options -x"
+    elif ${debug}; then
+        _customize_siript_options="$_customize_siript_options -d"
+    fi
 
     # run_customize_script <script path from lubs> <script path in chroot>
+    local run_customize_script
     run_customize_script() {
         if [[ -f "${1}" ]]; then
             chmod 755 "${1}"
-            run_cmd "${2}"
+            run_cmd "${2} ${_customize_siript_options}"
         fi
     }
-
     run_customize_script "${work_dir}/airootfs/root/customize_airootfs.sh" "/root/customize_airootfs.sh"
     run_customize_script "${work_dir}/airootfs/root/customize_airootfs_${channel_name}.sh"  "/root/customize_airootfs_${channel_name}.sh"
 }
