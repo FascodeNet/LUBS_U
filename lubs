@@ -540,6 +540,8 @@ while :; do
             if [[ -z ${2} ]]; then
                 _msg_error "Please specify the out dir."
                 exit 1
+            else
+                out_dir="${2}"
             fi
             shift 2
             ;;
