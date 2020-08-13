@@ -87,7 +87,7 @@ _msg_error() {
 umount_chroot () {
     local mount
     for mount in $(mount | awk '{print $3}' | grep $(realpath ${work_dir}) | sort -r); do
-        [[ "${1}" == debug ]] && _msg_debug "Unmounting ${mount}" || _msg_info "Unmounting ${mount}"
+        _msg_info "Unmounting ${mount}"
         umount -fl "${mount}"
     done
 }
@@ -118,13 +118,14 @@ run_once() {
 }
 
 run_cmd() {
+    local mount
     for mount in "dev" "dev/pts" "proc" "sys" "run/systemd/resolve/stub-resolv.conf"; do
-        _msg_debug "Mounting  ${work_dir}/airootfs/${mount}"
         [[ "${mount}" == "run/systemd/resolve/stub-resolv.conf" ]] && mount --bind /etc/resolv.conf "${work_dir}/airootfs/${mount}" || mount --bind /${mount} "${work_dir}/airootfs/${mount}"
     done
-
     chroot "${work_dir}/airootfs" "${@}"
-    umount_chroot debug
+    for mount in $(mount | awk '{print $3}' | grep $(realpath ${work_dir}) | sort -r); do
+        umount -fl "${mount}"
+    done
 }
 
 run_bootfiles() {
