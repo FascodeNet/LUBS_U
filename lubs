@@ -300,6 +300,8 @@ make_sourcelist() {
 
 make_systemd() {
     _apt_install systemd-sysv
+    run_cmd dbus-uuidgen --ensure=/etc/machine-id
+    run_cmd ln -sf /etc/machine-id /var/lib/dbus/machine-id
 }
 
 make_apt_packages() {
