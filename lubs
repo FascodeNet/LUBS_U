@@ -257,6 +257,7 @@ make_basefs() {
 
 make_sourcelist() {
     cp ${script_path}/source.list.d/${codename}/* ${work_dir}/airootfs/etc/apt
+    sed -i "s@http://archive.ubuntu.com/ubuntu/@${mirror}@g"  ${work_dir}/airootfs/etc/apt/sources.list
     run_cmd apt-get update
 
     if [[ -n $(find ${channels_dir}/*/repo -type f) ]]; then
@@ -384,6 +385,8 @@ make_customize_airootfs() {
 }
 
 make_clean() {
+    sed -i "s@${mirror}@http://archive.ubuntu.com/ubuntu/@g"  ${work_dir}/airootfs/etc/apt/sources.list
+    run_cmd apt-get update
     run_cmd apt-get clean
     run_cmd apt-get --yes autoremove
     run_cmd rm -rf "/tmp/* ~/.bash_history"
