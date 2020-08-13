@@ -4,7 +4,6 @@ while getopts 't:b:d:' arg; do
         t) textcolor="${OPTARG}" ;;
         b) backcolor="${OPTARG}" ;;
         d) deco="${OPTARG}" ;;
-        *) echo "Invalid argument '${OPTARG}'" ;;
     esac
 done
 
@@ -16,8 +15,7 @@ if [[ -n "${deco}" ]]; then
         1) decotypes="bold" ;;
         4) decotypes="smul" ;;
         5) decotypes="blink" ;;
-        *) echo "Invalid argument '${deco}'" ;;
     esac
 fi
 
-echo "$([[ -n "${textcolor}" ]] && tput setaf "${textcolor}")$([[ -n "${backcolor}" ]] && tput setab "${backcolor}")$([[ -n "${decotypes}" ]] && tput "${decotypes}")${*}$(tput sgr0)"
+echo "$([[ -n "${textcolor}" ]] && tput setaf ${textcolor})$([[ -n "${backcolor}" ]] && tput setab ${backcolor})$([[ -n "${decotypes}" ]] && tput ${decotypes})${@}$(tput sgr0)"

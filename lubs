@@ -5,7 +5,7 @@ set -e
 
 export LANG=C
 
-script_path=$(readlink -f "${0%/*}")
+script_path=$(readlink -f ${0%/*})
 
 cache_dir="${script_path}/cache"
 channels_dir="${script_path}/channels"
@@ -39,10 +39,9 @@ start_time="$(date +%s)"
 
 _msg_common() {
     if [[ "${debug}" = true ]]; then
-        local _current_time
+        local _current_time="$(date +%s)"
         local _time
 
-        _current_time="$(date +%s)"
         _time="$(("${_current_time}"-"${start_time}"))"
 
         if [[ "${_time}" -ge 3600 ]]; then
@@ -60,8 +59,7 @@ _msg_common() {
 # Show an INFO message
 # _msg_info <message>
 _msg_info() {
-    local _msg
-    _msg="${*}"
+    local _msg="${@}"
     echo "$(_msg_common)  $("${script_path}/echo_color" -t 2 "Info:") ${_msg}"
 }
 
@@ -69,8 +67,7 @@ _msg_info() {
 # _msg_debug <message>
 _msg_debug() {
     if [[ "${debug}" = true ]]; then
-        local _msg
-        _msg="${*}"
+        local _msg="${@}"
         echo "$(_msg_common)  $("${script_path}/echo_color" -t 3 "Debug:") ${_msg}"
     fi
 }
@@ -78,20 +75,18 @@ _msg_debug() {
 # Show an ERROR message then exit with status
 # _msg_error <message> <exit code>
 _msg_error() {
-    local _msg
-    local _error
-    _msg="${1}"
-    _error=${2}
+    local _msg="${1}"
+    local _error=${2}
     echo "$(_msg_common)  $("${script_path}/echo_color" -t 1 "Error:") ${_msg}"
-    if [[ ! "${_error}" = 0 ]]; then
-        exit "${_error}"
+    if [[ ! ${_error} = 0 ]]; then
+        exit ${_error}
     fi
 }
 
 # Unmount chroot dir
 umount_chroot () {
     local mount
-    for mount in $(mount | awk '{print $3}' | grep "$(realpath "${work_dir}")" | sort -r); do
+    for mount in $(mount | awk '{print $3}' | grep $(realpath ${work_dir}) | sort -r); do
         _msg_info "Unmounting ${mount}"
         umount -fl "${mount}"
     done
@@ -109,7 +104,7 @@ run_once() {
     fi
 
     if [[ ! -e "${work_dir}/build.${name}" ]]; then
-        _msg_info "${name//_/ } is starting."
+        _msg_info "$(echo $name | sed "s@_@ @g") is starting."
 
         if [[ "run_bootfiles" == "$1" ]]; then
             "$1" "$2"
@@ -117,7 +112,7 @@ run_once() {
             "$1"
         fi
 
-        _msg_info "${name//_/ } was done!"
+        _msg_info "$(echo $name | sed "s@_@ @g") was done!"
         touch "${work_dir}/build.${name}"
     fi
 }
@@ -125,14 +120,10 @@ run_once() {
 run_cmd() {
     local mount
     for mount in "dev" "dev/pts" "proc" "sys" "run/systemd/resolve/stub-resolv.conf"; do
-        if [[ "${mount}" == "run/systemd/resolve/stub-resolv.conf" ]]; then
-            mount --bind /etc/resolv.conf "${work_dir}/airootfs/${mount}"
-        else
-            mount --bind /${mount} "${work_dir}/airootfs/${mount}"
-        fi
+        [[ "${mount}" == "run/systemd/resolve/stub-resolv.conf" ]] && mount --bind /etc/resolv.conf "${work_dir}/airootfs/${mount}" || mount --bind /${mount} "${work_dir}/airootfs/${mount}"
     done
     chroot "${work_dir}/airootfs" "${@}"
-    for mount in $(mount | awk '{print $3}' | grep "$(realpath "${work_dir}")" | sort -r); do
+    for mount in $(mount | awk '{print $3}' | grep $(realpath ${work_dir}) | sort -r); do
         umount -fl "${mount}"
     done
 }
@@ -144,7 +135,7 @@ run_bootfiles() {
 }
 
 _apt_install() {
-    run_cmd apt-get --no-install-recommends --yes install "${@}"
+    run_cmd apt-get --no-install-recommends --yes install ${@}
 }
 
 # rm helper
@@ -155,7 +146,7 @@ _apt_install() {
 remove() {
     local _list
     local _file
-    _list=("${@}")
+    _list=($(echo "$@"))
     for _file in "${_list[@]}"; do
         _msg_debug "Removeing ${_file}"
         if [[ -f ${_file} ]]; then
@@ -194,10 +185,10 @@ _usage () {
     local description
     for _channel in $(ls -l "${channels_dir}" | awk '$1 ~ /d/ {print $9 }'); do
         if [[ -n $(ls "${channels_dir}/${_channel}") ]] && [[ ! "${_channel}" = "share" ]]; then
-            channel_list+=( "${_channel}" )
+            channel_list="${channel_list[@]} ${_channel}"
         fi
     done
-    for _channel in "${channel_list[@]}"; do
+    for _channel in ${channel_list[@]}; do
         if [[ -f "${channels_dir}/${_channel}/description.txt" ]]; then
             description=$(cat "${channels_dir}/${_channel}/description.txt")
         else
@@ -223,7 +214,7 @@ prepare_build() {
     umount_chroot 
 
     # Check codename
-    if ! grep -h -v ^'#' "${channels_dir}/${channel_name}/codename.${arch}" | grep -q -x "${codename}"; then
+    if [[ -z $(grep -h -v ^'#' ${channels_dir}/${channel_name}/codename.${arch} | grep -x ${codename}) ]]; then
         _msg_error "This codename (${channel_name}) is not supported on this channel (${codename})."
     fi
 
@@ -235,8 +226,8 @@ make_basefs() {
     statusfile="${cache_dir}/${codename}/status"
 
     debootstrap_status() {
-        if [[ ! -d "$(dirname "${statusfile}")" ]]; then
-            mkdir -p "$(dirname "${statusfile}")"
+        if [[ ! -d "$(dirname ${statusfile})" ]]; then
+            mkdir -p "$(dirname ${statusfile})"
         fi
         echo "${1}" > "${statusfile}"
     }
@@ -265,28 +256,28 @@ make_basefs() {
 }
 
 make_sourcelist() {
-    cp "${script_path}/source.list.d/${codename}/*" "${work_dir}/airootfs/etc/apt"
-    sed -i "s@http://archive.ubuntu.com/ubuntu/@${mirror}@g"  "${work_dir}/airootfs/etc/apt/sources.list"
+    cp ${script_path}/source.list.d/${codename}/* ${work_dir}/airootfs/etc/apt
+    sed -i "s@http://archive.ubuntu.com/ubuntu/@${mirror}@g"  ${work_dir}/airootfs/etc/apt/sources.list
     run_cmd apt-get update
 
-    if [[ -n $(find "${channels_dir}/*/repo" -type f) ]]; then
+    if [[ -n $(find ${channels_dir}/*/repo -type f) ]]; then
         _apt_install gnupg
 
-        while IFS= read -r -d '' repo; do
+        for repo in $(find ${channels_dir}/*/repo -name *.list); do
             key="$(dirname ${repo})/$(basename ${repo} | sed "s/list/key/")"
             
             if [[ -f "${key}" ]]; then
-                if file "${key}" | grep -q "PGP/GPG key"; then
-                    cp "${key}" "${work_dir}/airootfs/$(basename "${key}")"
+                if $(file ${key} | grep -q "PGP/GPG key"); then
+                    cp ${key} ${work_dir}/airootfs/$(basename ${key})
                 else
-                    wget -q -O "${work_dir}/airootfs/$(basename "${key}")" "$(cat "${key}")"
+                    wget -q -O ${work_dir}/airootfs/$(basename ${key}) $(cat ${key})
                 fi
 
-                run_cmd apt-key add "$(basename "${key}")"
-                rm "${work_dir}/airootfs/$(basename "${key}")"
-                cp "${repo}" "${work_dir}/airootfs/etc/apt/sources.list.d"
+                run_cmd apt-key add $(basename ${key})
+                rm ${work_dir}/airootfs/$(basename ${key})
+                cp ${repo} ${work_dir}/airootfs/etc/apt/sources.list.d
             fi
-        done < <(find "${channels_dir}/*/repo" -name '*.list')
+        done
 
         run_cmd apt-get update
     fi
@@ -298,7 +289,7 @@ make_sourcelist() {
 
     PPA_FILELIST=("${channels_dir}/share/ppa_list.${arch}" "${channels_dir}/${channel_name}/ppa_list.${arch}")
     _apt_install software-properties-common
-    for _PPA_FILE in "${PPA_FILELIST[@]}"; do
+    for _PPA_FILE in ${PPA_FILELIST[@]}; do
         if [[ -f "${_PPA_FILE}" ]]; then
             for _ppa in $(grep -h -v ^'#' ${_PPA_FILE}); do
                 run_cmd add-apt-repository --yes "${_ppa}"
@@ -317,12 +308,12 @@ make_apt_packages() {
     remove "${work_dir}/airootfs/aptpkglist"
 
     if [[ -f "${channels_dir}/share/packages.${arch}" ]]; then
-        grep -h -e -v ^'#' -e "^$" "${channels_dir}/share/packages.${arch}" >> "${work_dir}/airootfs/aptpkglist"
+        grep -h -v ^'#' "${channels_dir}/share/packages.${arch}" | grep -v "^$" >> "${work_dir}/airootfs/aptpkglist"
     fi
     if [[ -f "${channels_dir}/${channel_name}/packages.${arch}" ]]; then
-        grep -h -e -v ^'#' -e "^$" "${channels_dir}/${channel_name}/packages.${arch}" >> "${work_dir}/airootfs/aptpkglist"
+        grep -h -v ^'#' "${channels_dir}/${channel_name}/packages.${arch}" | grep -v "^$" >> "${work_dir}/airootfs/aptpkglist"
     fi
-    if [[ -s "${work_dir}/airootfs/aptpkglist" ]]; then
+    if [[ -n "$(echo $(<"${work_dir}/airootfs/aptpkglist"))" ]]; then
         run_cmd env -i bash -c 'DEBIAN_FRONTEND=noninteractive apt-get --no-install-recommends --yes install $(echo $(<aptpkglist))'
     fi
     remove "${work_dir}/airootfs/aptpkglist"
@@ -337,7 +328,7 @@ make_snap_packages() {
     if [[ -f "${channels_dir}/${channel_name}/snap-packages.${arch}" ]]; then
         grep -h -v ^'#' "${channels_dir}/${channel_name}/snap-packages.${arch}" | grep -v "^$" >> "${work_dir}/airootfs/snappkglist"
     fi
-    if [[ -s "${work_dir}/airootfs/snappkglist" ]]; then
+    if [[ -n "$(echo $(<"${work_dir}/airootfs/snappkglist"))" ]]; then
         _apt_install snapd
         run_cmd env -i bash -c 'snap install $(echo $(<snappkglist))'
     fi
@@ -352,7 +343,7 @@ make_config() {
     run_cmd env -i bash -c 'DEBIAN_FRONTEND=noninteractive dpkg-reconfigure resolvconf'
 
     # NetworkManager
-    cp "${channels_dir}/share/airootfs/etc/NetworkManager/NetworkManager.conf" "${work_dir}/airootfs/etc/NetworkManager/NetworkManager.conf"
+    cp ${channels_dir}/share/airootfs/etc/NetworkManager/NetworkManager.conf ${work_dir}/airootfs/etc/NetworkManager/NetworkManager.conf
 
     # Timezone
     #run_cmd echo -ne "UTC" > '/etc/timezone'
@@ -377,10 +368,9 @@ make_customize_airootfs() {
 
     #-- Run scripts --#
     local _customize_siript_options="-a ${arch} -u '${username}' -p '${password}' -s '${usershell}'"
-    #if "${bash_debug}"; then
-    #    _customize_siript_options="$_customize_siript_options -x"
-    #elif "${debug}"; then
-    if "${debug}"; then
+    if ${bash_debug}; then
+        _customize_siript_options="$_customize_siript_options -x"
+    elif ${debug}; then
         _customize_siript_options="$_customize_siript_options -d"
     fi
 
@@ -397,7 +387,7 @@ make_customize_airootfs() {
 }
 
 make_clean() {
-    sed -i "s@${mirror}@http://archive.ubuntu.com/ubuntu/@g"  "${work_dir}/airootfs/etc/apt/sources.list"
+    sed -i "s@${mirror}@http://archive.ubuntu.com/ubuntu/@g"  ${work_dir}/airootfs/etc/apt/sources.list
     run_cmd apt-get update
     run_cmd apt-get clean
     run_cmd apt-get --yes autoremove
@@ -408,26 +398,26 @@ make_bootfiles() {
     run_cmd env -i bash -c 'update-initramfs -c -k all'
     _apt_install memtest86+
     [[ -d "${bootfiles_dir}" ]] && rm -r "${bootfiles_dir}"
-    mkdir -p "${bootfiles_dir}/{casper,isolinux,install}"
+    mkdir -p ${bootfiles_dir}/{casper,isolinux,install}
     cp "${work_dir}/airootfs/boot/vmlinuz" "${bootfiles_dir}/casper/vmlinuz"
     cp "${work_dir}/airootfs/boot/initrd.img" "${bootfiles_dir}/casper/initrd"
     cp "${work_dir}/airootfs/boot/memtest86+.bin" "${bootfiles_dir}/install/memtest86+"
 
     if [[ ! -f "${cache_dir}/memtest86-usb.zip" ]]; then
-        wget -O "${cache_dir}/memtest86-usb.zip https://www.memtest86.com/downloads/memtest86-usb.zip"
+        wget -O ${cache_dir}/memtest86-usb.zip https://www.memtest86.com/downloads/memtest86-usb.zip
     fi
 
-    (unzip -p "${cache_dir}/memtest86-usb.zip" memtest86-usb.img > "${bootfiles_dir}/install/memtest86")
+    (unzip -p ${cache_dir}/memtest86-usb.zip memtest86-usb.img > ${bootfiles_dir}/install/memtest86)
 }
 
 make_grubcfg() {
     touch "${bootfiles_dir}/ubuntu"
-    cp "${isolinux_dir}/grub.cfg" "${bootfiles_dir}/isolinux/grub.cfg"
+    cp ${isolinux_dir}/grub.cfg ${bootfiles_dir}/isolinux/grub.cfg
 }
 
 make_manifest() {
-    run_cmd dpkg-query -W --showformat='${Package} ${Version}\n' | tee "${bootfiles_dir}/casper/filesystem.manifest"
-    cp -v "${bootfiles_dir}/casper/filesystem.manifest" "${bootfiles_dir}/casper/filesystem.manifest-desktop"
+    run_cmd dpkg-query -W --showformat='${Package} ${Version}\n' | tee ${bootfiles_dir}/casper/filesystem.manifest
+    cp -v ${bootfiles_dir}/casper/filesystem.manifest "${bootfiles_dir}/casper/filesystem.manifest-desktop"
     sed -i '/ubiquity/d' "${bootfiles_dir}/casper/filesystem.manifest-desktop"
     sed -i '/casper/d' "${bootfiles_dir}/casper/filesystem.manifest-desktop"
     sed -i '/discover/d' "${bootfiles_dir}/casper/filesystem.manifest-desktop"
@@ -437,11 +427,11 @@ make_manifest() {
 
 make_squashfs() {
     mksquashfs "${work_dir}/airootfs" "${bootfiles_dir}/casper/filesystem.squashfs"
-    printf "$(du -sx --block-size=1 "${work_dir}/airootfs" | cut -f1)" > "${bootfiles_dir}/casper/filesystem.size"
+    printf $(du -sx --block-size=1 "${work_dir}/airootfs" | cut -f1) > ${bootfiles_dir}/casper/filesystem.size
 }
 
 make_deifnes() {
-    cp "${isolinux_dir}/README.diskdefines" "${bootfiles_dir}/README.diskdefines"
+    cp ${isolinux_dir}/README.diskdefines ${bootfiles_dir}/README.diskdefines
 }
 
 make_isolinux() {
@@ -451,7 +441,7 @@ make_isolinux() {
         local _arch="${arch}"
     fi
     grub-mkstandalone \
-        --format="${_arch}-efi" \
+        --format=${_arch}-efi \
         --output=isolinux/bootx64.efi \
         --locales="" \
         --fonts="" \
@@ -507,7 +497,7 @@ make_iso() {
 }
 
 make_checksum() {
-    cd "${out_dir}"
+    cd ${out_dir}
     _msg_info "Creating md5 checksum ..."
     md5sum "${iso_filename}" > "${iso_filename}.md5"
 
@@ -609,10 +599,10 @@ if [[ -n "${1}" ]]; then
         channel_list=()
         for _channel in $(ls -l "${channels_dir}" | awk '$1 ~ /d/ {print $9 }'); do
             if [[ -n $(ls "${channels_dir}/${_channel}") ]] && [[ ! "${_channel}" = "share" ]]; then
-                channel_list+=( "${_channel}" )
+                channel_list="${channel_list[@]} ${_channel}"
             fi
         done
-        for i in "${channel_list[@]}"; do
+        for i in ${channel_list[@]}; do
             if [[ "${i}" = "${channel_name}" ]]; then
                 echo -n "true"
                 return 0
@@ -622,7 +612,7 @@ if [[ -n "${1}" ]]; then
         return 1
     }
 
-    if [[ "$(check_channel "${channel_name}")" = false ]]; then
+    if [[ $(check_channel ${channel_name}) = false ]]; then
         _msg_error "Invalid channel ${channel_name}"
         exit 1
     fi
