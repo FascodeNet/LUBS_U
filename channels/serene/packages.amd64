@@ -95,9 +95,9 @@ simple-scan
 ubuntu-cleaner
 
 #-- web browser --#
-chromium-browser
-chromium-browser-l10n
-chromium-codecs-ffmpeg-extra
+#chromium-browser
+#chromium-browser-l10n
+#chromium-codecs-ffmpeg-extra
 
 #-- security --#
 gufw
