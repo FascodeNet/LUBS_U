@@ -54,9 +54,6 @@ serenelinux-artworks
 #
 #   Theme
 #
-#-- icon --#
-papirus-icon-theme
-
 #-- theme --#
 numix-blue-gtk-theme
 
