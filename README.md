@@ -13,3 +13,7 @@
 ```bash
 sudo apt-get install binutils debootstrap squashfs-tools xorriso grub-pc-bin grub-efi-amd64-bin mtools
 ```
+
+## Warning
+At now, LUBS don't support snap.  
+Mustn't add chromium-browser to package list.
