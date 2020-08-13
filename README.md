@@ -11,5 +11,5 @@
 ## Dependent package
 
 ```bash
-sudo apt-get install binutils debootstrap squashfs-tools xorriso grub-pc-bin grub-efi-amd64-bin mtools arch-install-scripts
+sudo apt-get install binutils debootstrap squashfs-tools xorriso grub-pc-bin grub-efi-amd64-bin mtools
 ```
