@@ -280,7 +280,7 @@ make_sourcelist() {
     if [[ -n $(find ${channels_dir}/*/repo -type f) ]]; then
         _apt_install gnupg
 
-        for repo in $(find "${channels_dir}/*/repo" -name '*.list'); do
+        for repo in $(find ${channels_dir}/*/repo -name '*.list'); do
             key="$(dirname ${repo})/$(basename ${repo} | sed "s/list/key/")"
 
             if [[ -f "${key}" ]]; then
