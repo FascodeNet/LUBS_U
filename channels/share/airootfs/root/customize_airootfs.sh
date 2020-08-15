@@ -69,7 +69,6 @@ function create_user () {
 
     if [[ $(user_check ${_username}) = false ]]; then
         useradd -m -s ${usershell} ${_username}
-        groupadd sudo
         usermod -U -g ${_username} ${_username}
         usermod -aG sudo ${_username}
         usermod -aG storage ${_username}

@@ -392,7 +392,7 @@ make_customize_airootfs() {
 
     #-- Run scripts --#
     local _customize_siript_options
-    _customize_siript_options="-a ${arch} -u '${username}' -p '${password}' -s '${usershell}'"
+    _customize_siript_options="-a ${arch} -u ${username} -p ${password} -s ${usershell}"
 
     #if ${bash_debug}; then
     #    _customize_siript_options="$_customize_siript_options -x"
@@ -406,7 +406,7 @@ make_customize_airootfs() {
     run_customize_script() {
         if [[ -f "${1}" ]]; then
             chmod 755 "${1}"
-            run_cmd "${2} ${_customize_siript_options}"
+            run_cmd "${2}" "${_customize_siript_options}"
         fi
     }
     run_customize_script "${work_dir}/airootfs/root/customize_airootfs.sh" "/root/customize_airootfs.sh"
@@ -434,7 +434,7 @@ make_bootfiles() {
         wget -O "${cache_dir}/memtest86-usb.zip" https://www.memtest86.com/downloads/memtest86-usb.zip
     fi
 
-    (unzip -p "${cache_dir}/memtest86-usb.zip memtest86-usb.img" > "${bootfiles_dir}/install/memtest86")
+    bash -c "unzip -p ${cache_dir}/memtest86-usb.zip memtest86-usb.img > ${bootfiles_dir}/install/memtest86"
 }
 
 make_grubcfg() {
