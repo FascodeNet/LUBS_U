@@ -1,4 +1,15 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: GPL-3.0
+#
+# mk-linux419
+# Twitter: @fascoder_4
+# Email  : m.k419sabuaka@gmail.com
+#
+# (c) 2019-2020 Fascode Network.
+#
+# echo_color
+#
+
 while getopts 't:b:d:' arg; do
     case ${arg} in
         t) textcolor="${OPTARG}" ;;
