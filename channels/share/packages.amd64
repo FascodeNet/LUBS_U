@@ -39,6 +39,10 @@ grub-efi-amd64-bin
 grub-efi-ia32-bin
 os-prober
 
+#-- isolinux --#
+isolinux
+syslinux-common
+
 #-- linux --#
 linux-firmware
 linux-generic

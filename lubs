@@ -23,7 +23,7 @@ script_path=$(readlink -f "${0%/*}")
 
 cache_dir="${script_path}/cache"
 channels_dir="${script_path}/channels"
-isolinux_dir="${script_path}/isolinux"
+nfb_dir="${script_path}/nfb"
 
 codename="focal"
 mirror="http://ftp.jaist.ac.jp/pub/Linux/ubuntu/"
@@ -116,22 +116,11 @@ umount_chroot () {
 run_once() {
     local name
     umount_chroot
-
-    if [[ "run_bootfiles" == "$1" ]]; then
-        name="$2"
-    else
-        name="$1"
-    fi
+    name="$1"
 
     if [[ ! -e "${work_dir}/build.${name}" ]]; then
         _msg_info "$(echo $name | sed "s@_@ @g") is starting."
-
-        if [[ "run_bootfiles" == "${1}" ]]; then
-            "${1}" "${2}"
-        else
-            "${1}"
-        fi
-
+        "${1}"
         _msg_info "$(echo $name | sed "s@_@ @g") was done!"
         touch "${work_dir}/build.${name}"
     fi
@@ -141,7 +130,11 @@ run_cmd() {
     local mount
 
     for mount in "dev" "dev/pts" "proc" "sys" "run/systemd/resolve/stub-resolv.conf"; do
-        [[ "${mount}" == "run/systemd/resolve/stub-resolv.conf" ]] && mount --bind /etc/resolv.conf "${work_dir}/airootfs/${mount}" || mount --bind /${mount} "${work_dir}/airootfs/${mount}"
+        if [[ "${mount}" == "run/systemd/resolve/stub-resolv.conf" ]]; then
+            mount --bind /etc/resolv.conf "${work_dir}/airootfs/${mount}"
+        else
+            mount --bind /${mount} "${work_dir}/airootfs/${mount}"
+        fi
     done
     
     chroot "${work_dir}/airootfs" "${@}"
@@ -149,12 +142,6 @@ run_cmd() {
     for mount in $(mount | awk '{print $3}' | grep "$(realpath "${work_dir}")" | sort -r); do
         umount -fl "${mount}"
     done
-}
-
-run_bootfiles() {
-    cd "${bootfiles_dir}"
-    "$1"
-    cd - > /dev/null
 }
 
 _apt_install() {
@@ -269,7 +256,7 @@ make_basefs() {
         debootstrap_status "Running"
         _msg_info "Installing Ubuntu to '${cache_dir}/${codename}/airootfs'..."
         mkdir -p "${cache_dir}/${codename}/airootfs"
-        debootstrap --arch=${arch} --include=linux-image-generic  --verbose --merged-usr "${codename}" "${cache_dir}/${codename}/airootfs" ${mirror}
+        debootstrap --arch="${arch}" --verbose --merged-usr "${codename}" "${cache_dir}/${codename}/airootfs" "${mirror}"
         _msg_info "${codename} installed successfully!"
         debootstrap_status "Done"
     fi
@@ -336,6 +323,8 @@ make_systemd() {
 
 make_apt_packages() {
     remove "${work_dir}/airootfs/aptpkglist"
+    _apt_install initramfs-tools
+    run_cmd env -i bash -c 'DEBIAN_FRONTEND=noninteractive apt-get dist-upgrade --yes'
 
     if [[ -f "${channels_dir}/share/packages.${arch}" ]]; then
         grep -h -v ^'#' "${channels_dir}/share/packages.${arch}" | grep -v "^$" >> "${work_dir}/airootfs/aptpkglist"
@@ -435,86 +424,83 @@ make_clean() {
     run_cmd rm -rf "/tmp/* ~/.bash_history"
 }
 
-make_bootfiles() {
-    run_cmd env -i bash -c 'update-initramfs -c -k all'
-    _apt_install memtest86+
+make_squashfs() {
+    # prepare
     [[ -d "${bootfiles_dir}" ]] && rm -r "${bootfiles_dir}"
-    mkdir -p ${bootfiles_dir}/{casper,isolinux,install}
+    mkdir -p "${bootfiles_dir}"/{casper,isolinux,install}
+
+    # make squashfs
+    mksquashfs "${work_dir}/airootfs" "${bootfiles_dir}/casper/filesystem.squashfs"
+}
+
+make_nfb() {
+    # prepare
+    touch "${bootfiles_dir}/ubuntu"
+    sed "s|%OS_NAME%|${os_name}|g" "${nfb_dir}/README.diskdefines" > "${bootfiles_dir}/README.diskdefines"
+
+    # casper setup
     cp "${work_dir}/airootfs/boot/vmlinuz" "${bootfiles_dir}/casper/vmlinuz"
     cp "${work_dir}/airootfs/boot/initrd.img" "${bootfiles_dir}/casper/initrd"
+    run_cmd dpkg-query -W --showformat='${Package} ${Version}\n' > ${bootfiles_dir}/casper/filesystem.manifest
+    cp -v "${bootfiles_dir}/casper/filesystem.manifest" "${bootfiles_dir}/casper/filesystem.manifest-desktop"
+    sed -i '/casper/d;/discover/d;/laptop-detect/d;/os-prober/d;/ubiquity/d' "${bootfiles_dir}/casper/filesystem.manifest-desktop"
+    printf $(du -sx --block-size=1 "${work_dir}/airootfs" | cut -f1) > "${bootfiles_dir}/casper/filesystem.size"
+
+    # isolinux setup
+    cp "${work_dir}"/airootfs/usr/lib/syslinux/modules/bios/*.c32 "${bootfiles_dir}/isolinux/"
+    cp "${work_dir}/airootfs/usr/lib/ISOLINUX/isolinux.bin" "${bootfiles_dir}/isolinux/"
+    cp "${work_dir}/airootfs/usr/lib/ISOLINUX/isohdpfx.bin" "${bootfiles_dir}/isolinux/"
+    sed "s|%OS_NAME%|${os_name}|g" "${nfb_dir}/grub.cfg" > "${bootfiles_dir}/isolinux/grub.cfg"
+    sed "s|%OS_NAME%|${os_name}|g" "${nfb_dir}/isolinux.cfg" > "${bootfiles_dir}/isolinux/isolinux.cfg"
+
+    # memtest86+ setup
+    _apt_install memtest86+
     cp "${work_dir}/airootfs/boot/memtest86+.bin" "${bootfiles_dir}/install/memtest86+"
 
+    # memtest86 setup
     if [[ ! -f "${cache_dir}/memtest86-usb.zip" ]]; then
-        wget -O "${cache_dir}/memtest86-usb.zip" https://www.memtest86.com/downloads/memtest86-usb.zip
+        wget -O "${cache_dir}/memtest86-usb.zip" "https://www.memtest86.com/downloads/memtest86-usb.zip"
+        bash -c "(unzip -p ${cache_dir}/memtest86-usb.zip memtest86-usb.img > ${cache_dir}/memtest86)"
     fi
 
-    bash -c "unzip -p ${cache_dir}/memtest86-usb.zip memtest86-usb.img > ${bootfiles_dir}/install/memtest86"
+    cp "${cache_dir}/memtest86" "${bootfiles_dir}/install/memtest86"
 }
 
-make_grubcfg() {
-    touch "${bootfiles_dir}/ubuntu"
-    cp "${isolinux_dir}/grub.cfg" "${bootfiles_dir}/isolinux/grub.cfg"
-}
-
-make_manifest() {
-    run_cmd dpkg-query -W --showformat='${Package} ${Version}\n' | tee ${bootfiles_dir}/casper/filesystem.manifest
-    cp -v "${bootfiles_dir}/casper/filesystem.manifest" "${bootfiles_dir}/casper/filesystem.manifest-desktop"
-    sed -i '/ubiquity/d' "${bootfiles_dir}/casper/filesystem.manifest-desktop"
-    sed -i '/casper/d' "${bootfiles_dir}/casper/filesystem.manifest-desktop"
-    sed -i '/discover/d' "${bootfiles_dir}/casper/filesystem.manifest-desktop"
-    sed -i '/laptop-detect/d' "${bootfiles_dir}/casper/filesystem.manifest-desktop"
-    sed -i '/os-prober/d' "${bootfiles_dir}/casper/filesystem.manifest-desktop"
-}
-
-make_squashfs() {
-    mksquashfs "${work_dir}/airootfs" "${bootfiles_dir}/casper/filesystem.squashfs"
-    printf $(du -sx --block-size=1 "${work_dir}/airootfs" | cut -f1) > ${bootfiles_dir}/casper/filesystem.size
-}
-
-make_deifnes() {
-    cp ${isolinux_dir}/README.diskdefines ${bootfiles_dir}/README.diskdefines
-}
-
-make_isolinux() {
-    if [[ "${arch}" = "amd64" ]]; then
-        local _arch="x86_64"
-    else
-        local _arch="${arch}"
-    fi
-
+make_efi() {
+    # UEFI 32bit (ia32)
     grub-mkstandalone \
-        --format=${_arch}-efi \
-        --output=isolinux/bootx64.efi \
+        --format=i386-efi \
+        --output="${bootfiles_dir}/isolinux/bootia32.efi" \
         --locales="" \
         --fonts="" \
-        "boot/grub/grub.cfg=isolinux/grub.cfg"
+        "boot/grub/grub.cfg=${bootfiles_dir}/isolinux/grub.cfg"
     
-    (
-        cd isolinux && \
-        dd if=/dev/zero of=efiboot.img bs=1M count=10 && \
-        sudo mkfs.vfat efiboot.img && \
-        LC_CTYPE=C mmd -i efiboot.img efi efi/boot && \
-        LC_CTYPE=C mcopy -i efiboot.img ./bootx64.efi ::efi/boot/
-    )
-
+    # UEFI 64bit (x64)
     grub-mkstandalone \
-        --format=i386-pc \
-        --output=isolinux/core.img \
-        --install-modules="linux16 linux normal iso9660 biosdisk memdisk search tar ls" \
-        --modules="linux16 linux normal iso9660 biosdisk search" \
+        --format=x86_64-efi \
+        --output="${bootfiles_dir}/isolinux/bootx64.efi" \
         --locales="" \
         --fonts="" \
-        --themes="" \
-        "boot/grub/grub.cfg=isolinux/grub.cfg"
-    
-    cat /usr/lib/grub/i386-pc/cdboot.img isolinux/core.img > isolinux/bios.img
-}
+        "boot/grub/grub.cfg=${bootfiles_dir}/isolinux/grub.cfg"
 
-make_md5sum() {
-    /bin/bash -c "(find . -type f -print0 | xargs -0 md5sum | grep -v "\./md5sum.txt" > md5sum.txt)"
+    # create efiboot.img
+    truncate -s 10M "${bootfiles_dir}/isolinux/efiboot.img"
+    mkfs.fat -F 16 -f 1 -r 112 "${bootfiles_dir}/isolinux/efiboot.img"
+    mkdir "${bootfiles_dir}/mnt"
+    mount "${bootfiles_dir}/isolinux/efiboot.img" "${bootfiles_dir}/mnt"
+    cp "${bootfiles_dir}/isolinux/bootia32.efi" "${bootfiles_dir}/mnt"
+    cp "${bootfiles_dir}/isolinux/bootx64.efi" "${bootfiles_dir}/mnt"
+    umount -d "${bootfiles_dir}/mnt"
+    rm -r "${bootfiles_dir}/mnt"
 }
 
 make_iso() {
+    cd "${bootfiles_dir}"
+
+    # create checksum (using at booting)
+    bash -c "(find . -type f -print0 | xargs -0 md5sum | grep -v "\./md5sum.txt" > md5sum.txt)"
+
+    # create iso
     xorriso \
         -as mkisofs \
         -iso-level 3 \
@@ -523,26 +509,28 @@ make_iso() {
         -appid "${iso_application}" \
         -publisher "${iso_publisher}" \
         -preparer "prepared by LUBS" \
-        -eltorito-boot boot/grub/bios.img \
-        -no-emul-boot \
-        -boot-load-size 4 \
-        -boot-info-table \
-        --eltorito-catalog boot/grub/boot.cat \
-        --grub2-boot-info \
-        --grub2-mbr /usr/lib/grub/i386-pc/boot_hybrid.img \
+        -eltorito-boot isolinux/isolinux.bin \
+            -no-emul-boot \
+            -boot-load-size 4 \
+            -boot-info-table \
         -eltorito-alt-boot \
-        -e EFI/efiboot.img \
-        -no-emul-boot \
-        -append_partition 2 0xef isolinux/efiboot.img \
+            -eltorito-platform efi \
+            -eltorito-boot EFI/efiboot.img \
+            -no-emul-boot \
+        -isohybrid-mbr "${bootfiles_dir}/isolinux/isohdpfx.bin" \
+        -isohybrid-gpt-basdat \
+        -eltorito-catalog isolinux/boot.cat \
         -output "${out_dir}/${iso_filename}" \
         -graft-points \
             "." \
-            /boot/grub/bios.img=isolinux/bios.img \
-            /EFI/efiboot.img=isolinux/efiboot.img
+            "/isolinux/isolinux.bin=isolinux/isolinux.bin" \
+            "/EFI/efiboot.img=isolinux/efiboot.img"
+    
+    cd - > /dev/null
 }
 
 make_checksum() {
-    cd ${out_dir}
+    cd "${out_dir}"
     _msg_info "Creating md5 checksum ..."
     md5sum "${iso_filename}" > "${iso_filename}.md5"
 
@@ -682,12 +670,8 @@ run_once make_apt_packages
 run_once make_config
 run_once make_customize_airootfs
 run_once make_clean
-run_once make_bootfiles
-run_once make_grubcfg
-run_once make_manifest
 run_once make_squashfs
-run_once make_deifnes
-run_once run_bootfiles make_isolinux
-run_once run_bootfiles make_md5sum
-run_once run_bootfiles make_iso
+run_once make_nfb
+run_once make_efi
+run_once make_iso
 run_once make_checksum

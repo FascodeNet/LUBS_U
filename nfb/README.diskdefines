@@ -1,4 +1,4 @@
-#define DISKNAME  Ubuntu
+#define DISKNAME  %OS_NAME%
 #define TYPE  binary
 #define TYPEbinary  1
 #define ARCH  amd64
