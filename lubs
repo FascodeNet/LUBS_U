@@ -26,7 +26,7 @@ channels_dir="${script_path}/channels"
 nfb_dir="${script_path}/nfb"
 
 codename="focal"
-mirror="http://ftp.jaist.ac.jp/pub/Linux/ubuntu/"
+mirror="http://linux.yz.yamagata-u.ac.jp/ubuntu/"
 os_name="Ubuntu"
 iso_name="ubuntu"
 
