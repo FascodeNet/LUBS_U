@@ -14,4 +14,30 @@
 # customize_airootfs_serene.sh
 #
 
-echo "customize_airootfs.sh has been executed."
+set -e -u
+
+# Default value
+# All values can be changed by arguments.
+password="liveuser"
+username="liveuser"
+usershell="/bin/bash"
+debug=true
+
+
+# Parse arguments
+while getopts 'p:bt:k:rxju:o:i:s:da:' arg; do
+    case "${arg}" in
+        p) password="${OPTARG}" ;;
+        u) username="${OPTARG}" ;;
+        s) usershell="${OPTARG}" ;;
+        d) debug=true ;;
+        x) debug=true; set -xv ;;
+        a) arch="${OPTARG}"
+    esac
+done
+
+# Enable LightDM to auto login
+systemctl enable lightdm.service
+
+# Replace auto login user
+sed -i s/%USERNAME%/${username}/g /etc/lightdm/lightdm.conf

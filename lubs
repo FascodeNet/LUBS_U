@@ -412,6 +412,7 @@ make_customize_airootfs() {
             run_cmd "${2}" "${_customize_siript_options}"
         fi
     }
+    
     run_customize_script "${work_dir}/airootfs/root/customize_airootfs.sh" "/root/customize_airootfs.sh"
     run_customize_script "${work_dir}/airootfs/root/customize_airootfs_${channel_name}.sh"  "/root/customize_airootfs_${channel_name}.sh"
 }
