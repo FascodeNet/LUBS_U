@@ -45,7 +45,7 @@ vlc-plugin-visualization
 #
 #   Serene
 #
-# plymouth-theme-serene
+plymouth-theme-serene
 serene-google-menus
 serene-setup-wizard
 # serene-startdash
@@ -54,9 +54,6 @@ serenelinux-artworks
 #
 #   Theme
 #
-#-- icon --#
-papirus-icon-theme
-
 #-- theme --#
 numix-blue-gtk-theme
 
