@@ -340,25 +340,6 @@ make_apt_packages() {
     remove "${work_dir}/airootfs/aptpkglist"
 }
 
-make_snap_packages() {
-    remove "${work_dir}/airootfs/snappkglist"
-
-    if [[ -f "${channels_dir}/share/snap-packages.${arch}" ]]; then
-        grep -h -v ^'#' "${channels_dir}/share/snap-packages.${arch}" | grep -v "^$" >> "${work_dir}/airootfs/snappkglist"
-    fi
-
-    if [[ -f "${channels_dir}/${channel_name}/snap-packages.${arch}" ]]; then
-        grep -h -v ^'#' "${channels_dir}/${channel_name}/snap-packages.${arch}" | grep -v "^$" >> "${work_dir}/airootfs/snappkglist"
-    fi
-
-    if [[ -s "${work_dir}/airootfs/snappkglist" ]]; then
-        _apt_install snapd
-        run_cmd env -i bash -c 'snap install $(echo $(<snappkglist))'
-    fi
-
-    remove "${work_dir}/airootfs/snappkglist"
-}
-
 make_config() {
     # Locales
     run_cmd env -i bash -c 'DEBIAN_FRONTEND=noninteractive LANG=en_US.UTF-8 LC_ALL=C LANGUAGE=en_US.UTF-8 dpkg-reconfigure locales'
@@ -634,7 +615,6 @@ run_once make_basefs
 run_once make_sourcelist
 run_once make_systemd
 run_once make_apt_packages
-#run_once make_snap_packages
 run_once make_config
 run_once make_add_user
 run_once make_clean
