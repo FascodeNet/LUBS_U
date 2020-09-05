@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+# SPDX-License-Identifier: GPL-3.0
+#
+# mk-linux419
+# Twitter: @fascoder_4
+# Email  : m.k419sabuaka@gmail.com
+#
+# (c) 2019-2020 Fascode Network.
+#
+# genhome
+#
+
+cd "${HOME}"
+
+if [[ ! -d "${HOME}/.config/gtk-3.0" ]]; then
+    mkdir -p "${HOME}/.config/gtk-3.0"
+fi
+
+if [[ -f "${HOME}/.config/user-dirs.dirs" ]]; then
+    rm -f "${HOME}/.config/user-dirs.dirs"
+fi
+
+if [[ -f "${HOME}/.config/user-dirs.locale" ]]; then
+    rm -f "${HOME}/.config/user-dirs.locale"
+fi
+
+xdg-user-dirs-update --force
+source "${HOME}/.config/user-dirs.dirs"
+
+cat <<EOF > "${HOME}/.config/gtk-3.0/bookmarks"
+file://${XDG_DOCUMENTS_DIR} ${XDG_DOCUMENTS_DIR##*/}
+file://${XDG_MUSIC_DIR} ${XDG_MUSIC_DIR##*/}
+file://${XDG_PICTURES_DIR} ${XDG_PICTURES_DIR##*/}
+file://${XDG_VIDEOS_DIR} ${XDG_VIDEOS_DIR##*/}
+file://${XDG_DOWNLOAD_DIR} ${XDG_DOWNLOAD_DIR##*/}
+EOF
+
+if [[ "$(cat ${HOME}/.config/user-dirs.locale)" != "en_US" ]] && [[ "$(cat ${HOME}/.config/user-dirs.locale)" != "C" ]]; then
+    for i in "Desktop" "Templates" "Documents" "Music" "Pictures" "Videos"; do
+        if [[ -d "${HOME}/${i}" ]]; then
+            cp -ar "${HOME}/${i}"/* "$(declare -p XDG_${i^^}_DIR | awk -F '"' '{print $2}')"
+            rm -rf "${HOME}/${i}"
+        fi
+    done
+
+    if [[ -d "${HOME}/Downloads" ]]; then
+        cp -ar "${HOME}/Downloads"/* "${XDG_DOWNLOAD_DIR}"
+        rm -rf "${HOME}/Downloads"
+    fi
+fi
+
+rm -f "${HOME}/.config/autostart/genhome.desktop"

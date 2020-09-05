@@ -1,0 +1,13 @@
+[Desktop Entry]
+Encoding=UTF-8
+Version=1.0
+Name=genhome
+Comment=Generates home directories
+Icon=utilities-terminal
+Exec=/usr/bin/genhome
+X-GNOME-Autostart-enabled=true
+Type=Application
+RunHook=0
+StartupNotify=false
+Terminal=false
+Hidden=false

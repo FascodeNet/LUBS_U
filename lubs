@@ -42,7 +42,6 @@ iso_filename="${iso_name}-${iso_version}-${arch}.iso"
 channel_name="serene"
 
 username="liveuser"
-password="liveuser"
 usershell="/bin/bash"
 
 debug=false
@@ -378,43 +377,10 @@ make_config() {
     run_cmd truncate -s 0 /etc/machine-id
 }
 
-make_customize_airootfs() {
-    #-- Overwrite airootfs files --#
-    local copy_airootfs
-
-    copy_airootfs() {
-        local _dir="${1%/}"
-
-        if [[ -d "${_dir}" ]]; then
-            cp -af "${_dir}"/* "${work_dir}/airootfs"
-        fi
-    }
-
-    copy_airootfs "${channels_dir}/share/airootfs"
-    copy_airootfs "${channels_dir}/${channel_name}/airootfs"
-
-    #-- Run scripts --#
-    local _customize_siript_options
-    _customize_siript_options="-a ${arch} -u ${username} -p ${password} -s ${usershell}"
-
-    #if ${bash_debug}; then
-    #    _customize_siript_options="$_customize_siript_options -x"
-    #elif ${debug}; then
-    if ${debug}; then
-        _customize_siript_options="$_customize_siript_options -d"
-    fi
-
-    # run_customize_script <script path from lubs> <script path in chroot>
-    local run_customize_script
-    run_customize_script() {
-        if [[ -f "${1}" ]]; then
-            chmod 755 "${1}"
-            run_cmd "${2}" "${_customize_siript_options}"
-        fi
-    }
-    
-    run_customize_script "${work_dir}/airootfs/root/customize_airootfs.sh" "/root/customize_airootfs.sh"
-    run_customize_script "${work_dir}/airootfs/root/customize_airootfs_${channel_name}.sh"  "/root/customize_airootfs_${channel_name}.sh"
+make_add_user() {
+    sed "s|%USERNAME%|${username}|g;s|%OS_NAME%|${os_name}|g" "${nfb_dir}/casper.conf" > "${work_dir}/airootfs/etc/casper.conf"
+    chmod 755 "${work_dir}"/airootfs/usr/share/initramfs-tools/scripts/casper-bottom/*adduser "${work_dir}"/airootfs/usr/share/initramfs-tools/scripts/casper-bottom/*autologin
+    run_cmd env -i bash -c 'mkinitramfs -o /boot/initrd.img-`uname -r` `uname -r`'
 }
 
 make_clean() {
@@ -670,7 +636,7 @@ run_once make_systemd
 run_once make_apt_packages
 #run_once make_snap_packages
 run_once make_config
-run_once make_customize_airootfs
+run_once make_add_user
 run_once make_clean
 run_once make_squashfs
 run_once make_nfb
