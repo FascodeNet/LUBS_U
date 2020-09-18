@@ -222,7 +222,10 @@ _usage () {
 
 prepare_build() {
     if [[ ${EUID} -ne 0 ]]; then
-        _msg_error "This script must be run as root." 1
+        msg_warn "This script must be run as root." >&2
+        msg_warn "Re-run 'sudo ${0} ${@}'"
+        sudo "${0}" ${@}
+        exit "${?}"
     fi
 
     [[ ! -d "${work_dir}" ]] && mkdir -p "${work_dir}"
