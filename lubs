@@ -377,6 +377,17 @@ make_add_user() {
     run_cmd env -i bash -c 'mkinitramfs -o /boot/initrd.img-`uname -r` `uname -r`'
 }
 
+make_customize_airootfs() {
+    local _run_customize_airootfs_script
+
+    _run_customize_airootfs_script() {
+        [[ -f "${work_dir}/airootfs${1}" ]] && run_cmd "${1}"
+    }
+
+    _run_customize_airootfs_script "/root/customize_airootfs.sh"
+    _run_customize_airootfs_script "/root/customize_airootfs_${channel_name}.sh"
+}
+
 make_clean() {
     sed -i "s@${mirror}@http://archive.ubuntu.com/ubuntu/@g"  ${work_dir}/airootfs/etc/apt/sources.list
     run_cmd apt-get update
@@ -629,6 +640,7 @@ run_once make_systemd
 run_once make_apt_packages
 run_once make_config
 run_once make_add_user
+run_once make_customize_airootfs
 run_once make_clean
 run_once make_squashfs
 run_once make_nfb
