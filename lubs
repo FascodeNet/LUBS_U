@@ -37,7 +37,6 @@ iso_label="${os_name}_${codename}_${arch}"
 iso_publisher='Fascode Network <https://fascode.net>'
 iso_application="${os_name} Live/Rescue CD"
 iso_version="${codename}-$(date +%Y.%m.%d)"
-iso_filename="${iso_name}-${iso_version}-${arch}.iso"
 
 channel_name="serene"
 
@@ -222,17 +221,31 @@ _usage () {
 
 prepare_build() {
     if [[ ${EUID} -ne 0 ]]; then
-        _msg_error "This script must be run as root." 1
+        msg_warn "This script must be run as root." >&2
+        msg_warn "Re-run 'sudo ${0} ${@}'"
+        sudo "${0}" ${@}
+        exit "${?}"
     fi
 
     [[ ! -d "${work_dir}" ]] && mkdir -p "${work_dir}"
     [[ ! -d "${out_dir}" ]] && mkdir -p "${out_dir}"
     umount_chroot
 
+    # Load channel config
+    local _load_config
+    _load_config() {
+        [[ -f "${1}" ]] && source "${1}"
+    }
+    _load_config "${channels_dir}/${channel_name}/config.any"
+    _load_config "${channels_dir}/${channel_name}/config.${arch}"
+
     # Check codename
     if [[ -z $(grep -h -v ^'#' ${channels_dir}/${channel_name}/codename.${arch} | grep -x ${codename}) ]]; then
         _msg_error "This codename (${channel_name}) is not supported on this channel (${codename})."
     fi
+
+    # Set iso file name
+    iso_filename="${iso_name}-${iso_version}-${arch}.iso"
 
 }
 
@@ -364,6 +377,20 @@ make_add_user() {
     run_cmd env -i bash -c 'mkinitramfs -o /boot/initrd.img-`uname -r` `uname -r`'
 }
 
+make_customize_airootfs() {
+    local _run_customize_airootfs_script _script_option="-u ${username}"
+
+    _run_customize_airootfs_script() {
+        local __path="${1}"
+        shift 1
+        [[ -f "${work_dir}/airootfs${__path}" ]] && run_cmd "${__path}" "${@}"
+    }
+
+
+    _run_customize_airootfs_script "/root/customize_airootfs.sh" "${_script_option}"
+    _run_customize_airootfs_script "/root/customize_airootfs_${channel_name}.sh" "${_script_option}"
+}
+
 make_clean() {
     sed -i "s@${mirror}@http://archive.ubuntu.com/ubuntu/@g"  ${work_dir}/airootfs/etc/apt/sources.list
     run_cmd apt-get update
@@ -432,13 +459,12 @@ make_efi() {
         "boot/grub/grub.cfg=${bootfiles_dir}/isolinux/grub.cfg"
 
     # create efiboot.img
-    truncate -s 10M "${bootfiles_dir}/isolinux/efiboot.img"
+    truncate -s 50M "${bootfiles_dir}/isolinux/efiboot.img"
     mkfs.fat -F 16 -f 1 -r 112 "${bootfiles_dir}/isolinux/efiboot.img"
-    mkdir "${bootfiles_dir}/mnt"
     mount "${bootfiles_dir}/isolinux/efiboot.img" "${bootfiles_dir}/mnt"
     mkdir -p "${bootfiles_dir}/mnt/efi/boot"
-    cp "${bootfiles_dir}/isolinux/bootia32.efi" "${bootfiles_dir}/mnt/efi/boot"
-    cp "${bootfiles_dir}/isolinux/bootx64.efi" "${bootfiles_dir}/mnt/efi/boot"
+    cp "${bootfiles_dir}/isolinux/bootia32.efi" "${bootfiles_dir}/mnt/efi/boot/"
+    cp "${bootfiles_dir}/isolinux/bootx64.efi" "${bootfiles_dir}/mnt/efi/boot/"
     umount -d "${bootfiles_dir}/mnt"
     rm -r "${bootfiles_dir}/mnt"
 }
@@ -617,6 +643,7 @@ run_once make_systemd
 run_once make_apt_packages
 run_once make_config
 run_once make_add_user
+run_once make_customize_airootfs
 run_once make_clean
 run_once make_squashfs
 run_once make_nfb

@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+
+iso_publisher='Fascode Network <https://fascode.net>'
+iso_application="${os_name} Live/Rescue CD"
+iso_name="SereneLinux"
+usershell="/bin/bash"
