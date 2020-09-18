@@ -37,7 +37,6 @@ iso_label="${os_name}_${codename}_${arch}"
 iso_publisher='Fascode Network <https://fascode.net>'
 iso_application="${os_name} Live/Rescue CD"
 iso_version="${codename}-$(date +%Y.%m.%d)"
-iso_filename="${iso_name}-${iso_version}-${arch}.iso"
 
 channel_name="serene"
 
@@ -232,10 +231,21 @@ prepare_build() {
     [[ ! -d "${out_dir}" ]] && mkdir -p "${out_dir}"
     umount_chroot
 
+    # Load channel config
+    local _load_config
+    _load_config() {
+        [[ -f "${1}" ]] && source "${1}"
+    }
+    _load_config "${channels_dir}/${channel_name}/config.any"
+    _load_config "${channels_dir}/${channel_name}/config.${arch}"
+
     # Check codename
     if [[ -z $(grep -h -v ^'#' ${channels_dir}/${channel_name}/codename.${arch} | grep -x ${codename}) ]]; then
         _msg_error "This codename (${channel_name}) is not supported on this channel (${codename})."
     fi
+
+    # Set iso file name
+    iso_filename="${iso_name}-${iso_version}-${arch}.iso"
 
 }
 
