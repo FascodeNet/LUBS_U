@@ -378,14 +378,17 @@ make_add_user() {
 }
 
 make_customize_airootfs() {
-    local _run_customize_airootfs_script
+    local _run_customize_airootfs_script _script_option="-u ${username}"
 
     _run_customize_airootfs_script() {
-        [[ -f "${work_dir}/airootfs${1}" ]] && run_cmd "${1}"
+        local __path="${1}"
+        shift 1
+        [[ -f "${work_dir}/airootfs${__path}" ]] && run_cmd "${__path}" "${@}"
     }
 
-    _run_customize_airootfs_script "/root/customize_airootfs.sh"
-    _run_customize_airootfs_script "/root/customize_airootfs_${channel_name}.sh"
+
+    _run_customize_airootfs_script "/root/customize_airootfs.sh" "${_script_option}"
+    _run_customize_airootfs_script "/root/customize_airootfs_${channel_name}.sh" "${_script_option}"
 }
 
 make_clean() {
